@@ -9,6 +9,10 @@ import {UserThumbnail} from './components/Misc'
 
 import LoginPage from './components/pages/LoginPage'
 import HomePage from './components/pages/HomePage'
+import RoomTypePage from './components/pages/RoomTypePage'
+import GuestTypePage from './components/pages/GuestTypePage'
+import RoomPage from './components/pages/RoomPage'
+import RoomServicePage from './components/pages/RoomServicePage'
 
 function App(){
     const [sidebarShown, setSidebarShown] = useState(false)
@@ -19,13 +23,16 @@ function App(){
             icon: 'layers', text: 'Dashboard', link: ''
         },     
         room_type: {
-            icon: 'hanger', text: 'Room Types', link: 'room-types'
+            icon: 'couch', text: 'Room Types', link: 'room-types'
         },
         guest_type: {
-            icon: 'ecm004', text: 'Guest Types', link: 'guest-types'
+            icon: 'briefcase', text: 'Guest Types', link: 'guest-types'
         },
+        room: {
+            icon: 'door_open', text: 'Rooms', link: 'rooms'
+        },        
         room_service: {
-            icon: 'gen017', text: 'Room Services', link: 'room-services'
+            icon: 'commode_1', text: 'Room Services', link: 'room-services'
         },        
     }
     const userAuth = isAuth()
@@ -41,11 +48,12 @@ function App(){
                         rightWidgets={[
                             <UserThumbnail 
                                 userName={<Link to='/profile'>{user.name}</Link>}
+                                imgUrl={'/images/user_default_thumbnail.jpg'}
                             />
                         ]}
                         sidebarItems={(() => {
                             const sidebarItemNames = [
-                                'dashboard', 'room_type', 'guest_type', 'room_service'
+                                'dashboard', 'room_type', 'guest_type', 'room', 'room_service'
                             ]
                             return sidebarItemNames.map(name => sidebarItems[name])
                         })()}	
@@ -55,6 +63,18 @@ function App(){
                     <Switch>
                         <Route path="/login" exact component={LoginPage}/>
                         <ProtectedRoute path={'/'} exact component={HomePage}/>
+                        <ProtectedRoute path={'/room-types'} exact component={RoomTypePage} props={{
+                            user: user
+                        }}/>         
+                        <ProtectedRoute path={'/guest-types'} exact component={GuestTypePage} props={{
+                            user: user
+                        }}/>                                          
+                        <ProtectedRoute path={'/rooms'} exact component={RoomPage} props={{
+                            user: user
+                        }}/>
+                        <ProtectedRoute path={'/room-services'} exact component={RoomServicePage} props={{
+                            user: user
+                        }}/>                        
                     </Switch>                    
                 </div>     
             </Router>

@@ -4,3 +4,23 @@
 @import 'css/utilities.css';
 @import 'css/media-queries.css';
 @import 'css/custom.css';
+
+#login-page-container{
+    min-height: 100vh;
+    padding: 4rem;
+}
+
+#login-page-container .grid{
+    margin-top: 4rem;
+    width: 38rem;
+}
+
+#login-page-container .grid #login-btn{
+    width: 100%;
+}
+
+@media only screen and (max-width: 700px){
+    #login-page-container .grid{
+        width: 100%;
+    }        
+}
