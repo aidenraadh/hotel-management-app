@@ -1,0 +1,188 @@
+@media only screen and (min-width: 1281px) {
+  html {
+    font-size: 0.74125vw;
+  }
+}
+
+/* html font size is 9.14px at 375 px, 1.6rem = 14.6px */
+@media only screen and (max-width: 1280px) {
+	html {
+	  font-size: calc(10px - ( (1280px - 100vw) * 0.0013043 ) );
+	}
+}
+
+/* html font size is 9.14px at 375 px, 1.6rem = 14.6px 
+@media only screen and (max-width: 1280px) {
+	html {
+	  font-size: calc(10px - ( (1280px - 100vw) * 0.00095 ) );
+	}
+}*/
+
+/*
+html font size is 8.75px at 375 px, 1.6rem = 14px
+@media only screen and (max-width: 1280px) {
+  html {
+    font-size: calc(10px - ( (1280px - 100vw) * 0.00138 ) );
+  }
+}
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Tablet Layout
+|--------------------------------------------------------------------------
+|
+*/
+
+@media only screen and (max-width: 1100px){	
+	#app{
+		padding: 9.6rem 4vw 18rem;
+	}
+
+	.topbar{
+		padding: 0 4vw;
+	}
+
+	.topbar .user-thumbnail .user-name{
+		width: 1px; height: 1px;
+		visibility: hidden;
+	}
+
+	.topbar .topbar-item.show-sidebar-btn{
+		display: flex;
+	}
+
+	.sidebar{
+		width: 28rem;
+		max-width: 28rem;
+		overflow-y: auto;
+		background-color: #131628;
+		transform: translateX(-100%);
+	}
+
+	.sidebar.shown{
+		width: 28rem;
+		transform: translateX(0);
+	}	
+
+	.sidebar .hide-sidebar-btn{
+		display: inline-block;
+	}
+
+	.modal .modal-content{
+		width: 80vw;
+	}
+
+	.modal.sm .modal-content{
+		width: 50vw;
+	}	
+
+	#login-page .login-forms{
+		width: 50vw;
+	}
+	#login-page::before{
+		background-size: 40% auto;
+	}
+
+	.floating-btn{
+		right: 7vw;
+		bottom: 6rem;
+	}
+	.grid.collapsed-on-tablet{
+		grid-template-columns: auto;
+	}	
+}
+
+@media only screen and (max-width: 1000px){		
+}
+
+@media only screen and (max-width: 900px){
+
+	.footer{
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
+}
+
+@media only screen and (max-width: 800px){
+
+}
+
+/*
+|--------------------------------------------------------------------------
+| Mobile Layout
+|--------------------------------------------------------------------------
+*/
+
+@media only screen and (max-width: 700px){
+	#app{
+		padding: 9.6rem 3vw 10rem;
+	}
+	.sidebar{
+		width: 60vw;
+	}
+	.topbar{
+		padding: 0 3vw;
+	}
+	.main-navs .sidebar-item{
+		font-size: 1.4rem;
+	}		
+	.modal .modal-content, .modal.sm .modal-content{
+		width: 92vw;
+	}
+	.content-sized-modal.modal .modal-content{
+		width: 92vw !important;
+	}
+
+	.grid.grid-3{
+		grid-template-columns: auto auto;
+	}
+
+	.grid.collapsed-on-tablet{
+		grid-template-columns: auto;
+	}	
+
+	#login-page {
+		background-size: 50% auto;
+	}	
+	
+	#login-page .login-forms{
+		width: 80vw;
+	}
+
+	.table-stats{
+		width: 100%;
+	}
+	.sliding-stats-container > .stats-card{
+		width: 80%;
+	}
+	.full-on-mobile-btn{
+		width: 100%;
+	}	
+	.confirm-popup .confirm-popup-content{
+		max-width: 92vw;
+	}	
+	.grid.collapsed-on-mobile{
+		grid-template-columns: auto;
+	}	
+}
+
+@media only screen and (max-width: 600px){
+	#hotel-stats .grid-3{
+		grid-template-columns: 100%;
+	}
+
+	.make-booking-card .card-body > .rooms,
+	.make-booking-card .card-body > .services{
+		width: 100%;
+		float: none;
+	}
+	.grid.collapsed-on-mobile{
+		grid-template-columns: auto;
+	}	
+}
+
+@media only screen and (max-width: 500px){
+
+}
