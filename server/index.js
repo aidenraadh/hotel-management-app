@@ -13,10 +13,12 @@ const initPassport = require('./config/passport')
 const rootRouter   = require('./routes/index')
 const app          = express()
 
-app.use(cors({
-    origin: config.clientUrl,
-    credentials: true,
-}))
+if(env !== 'production'){
+    app.use(cors({
+        origin: config.clientUrl,
+        credentials: true,
+    }))  
+}
 
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
@@ -28,11 +30,8 @@ app.use('/api', rootRouter)
 
 if(env === 'production'){
     // Your production configuration here ...
-    app.use(cors({
-        credentials: true,
-    }))    
 }
-else{
+else{  
     app.get('/', (req, res) => {
         res.redirect(config['clientUrl'])
     })   

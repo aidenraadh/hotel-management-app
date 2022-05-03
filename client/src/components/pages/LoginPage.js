@@ -1,5 +1,5 @@
-import {useState}  from "react"
-import {api} from '../Utils'
+import {useCallback, useState}  from "react"
+import {api, keyHandler} from '../Utils'
 import {Redirect} from "react-router"
 
 import {Button} from '../Buttons'
@@ -15,12 +15,25 @@ const LoginPage = (props) => {
         background: 'url("/images/bg-1.jpg") no-repeat scroll center',
         backgroundSize: 'cover',
     }
+    const asd = useCallback(() => {
+        api
+        .post('/login', {
+            email: email, password: password
+        })
+        .then(response => login(response))
+        .catch(error => {
+            if(error.response.status === 400){
+                alert(error.response.data.message)
+            }            
+            if(error.response.status === 401){
+                login()
+            }
+        })        
+    }, [email, password])
     // When the user already authenticated
     if(isAuth()){
         return <Redirect to={'/'}/>
     }
-
-
 
     return (<>
         <div id='login-page-container' className="flex-col content-center items-center" style={containerBg}>
@@ -29,7 +42,8 @@ const LoginPage = (props) => {
                 <TextInput size={'lg'}
                     formAttr={{
                         value: email, placeholder: 'Email', 
-                        onChange: (e) => {setEmail(e.target.value)}
+                        onChange: (e) => {setEmail(e.target.value)},
+                        onKeyUp: (e) => {keyHandler(e, 'Enter', asd)}
                     }} 
                 />,
                 <TextInputWithBtn size={'lg'} btnIconName={passwordShown ? 'visible' : 'hidden'}
@@ -37,7 +51,8 @@ const LoginPage = (props) => {
                     formAttr={{
                         type: passwordShown ? 'text' : 'password', 
                         value: password, placeholder: 'Password', 
-                        onChange: (e) => {setPassword(e.target.value)}
+                        onChange: (e) => {setPassword(e.target.value)},
+                        onKeyUp: (e) => {keyHandler(e, 'Enter', asd)}                        
                     }} 
                 />,     
                 <Button 
