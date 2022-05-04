@@ -5,6 +5,12 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
+    static getLanguageISOCode(){
+      return {
+        '1': 'eng',
+        '2': 'ind'
+      }
+    }
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -25,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     role_id: DataTypes.SMALLINT,
     owner_id: DataTypes.BIGINT,
+    language_id: DataTypes.SMALLINT,
   }, {
     sequelize,
     modelName: 'User',

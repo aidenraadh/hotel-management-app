@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import ErrorBoundary from './components/ErrorBoundary'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
+
+import roomTypeReducer, {INIT_STATE as ROOM_TYPE_INIT_STATE} from "./reducers/RoomTypeReducer";
 
 import ProtectedRoute from './components/ProtectedRoute'
 import {isAuth, getUser} from './components/Auth'
@@ -16,6 +18,7 @@ import RoomServicePage from './components/pages/RoomServicePage'
 
 function App(){
     const [sidebarShown, setSidebarShown] = useState(false)
+    const [roomType, dispatchRoomType] = useReducer(roomTypeReducer, ROOM_TYPE_INIT_STATE)    
     const user = getUser()
 
     const sidebarItems = {
@@ -64,7 +67,7 @@ function App(){
                         <Route path="/login" exact component={LoginPage}/>
                         <ProtectedRoute path={'/'} exact component={HomePage}/>
                         <ProtectedRoute path={'/room-types'} exact component={RoomTypePage} props={{
-                            user: user
+                            user: user, roomType: roomType, dispatchRoomType: dispatchRoomType
                         }}/>         
                         <ProtectedRoute path={'/guest-types'} exact component={GuestTypePage} props={{
                             user: user

@@ -20,7 +20,7 @@ module.exports = {
         type: Sequelize.DataTypes.BIGINT,
         allowNull: false,
       },               
-      price_based_on: {
+      price_based_id: {
         type: Sequelize.DataTypes.SMALLINT,
         allowNull: false,
       },                

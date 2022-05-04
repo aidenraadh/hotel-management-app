@@ -4,6 +4,13 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Room extends Model {
+
+    static getPriceBasedOn(){
+      return {
+        '1': 'room type',
+        '2': 'guest type',
+      }
+    }
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -17,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     owner_id: DataTypes.BIGINT,
     room_type_id: DataTypes.BIGINT,
-    price_based_on: DataTypes.SMALLINT,
+    price_based_id: DataTypes.SMALLINT,
   }, {
     sequelize,
     modelName: 'Room',

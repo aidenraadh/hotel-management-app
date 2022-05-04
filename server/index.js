@@ -13,6 +13,8 @@ const initPassport = require('./config/passport')
 const rootRouter   = require('./routes/index')
 const app          = express()
 
+const Room = require('./models/index').Room
+
 if(env !== 'production'){
     app.use(cors({
         origin: config.clientUrl,

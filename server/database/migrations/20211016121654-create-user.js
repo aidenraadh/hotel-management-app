@@ -28,7 +28,11 @@ module.exports = {
       owner_id: {
         type: Sequelize.DataTypes.BIGINT,
         allowNull: false,
-      },                    
+      },      
+      language_id: {
+        type: Sequelize.DataTypes.SMALLINT,
+        allowNull: false,
+      },                     
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

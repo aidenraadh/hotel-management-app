@@ -1,9 +1,11 @@
+const models = require('../models/index')
 const jwt    = require('jsonwebtoken')
 const bcrypt = require('bcrypt') 
 const logger = require('../utils/logger')
 const path   = require('path')
 const fs     = require('fs')
-const User   = require('../models/index').User
+const User   = models.User
+const Role   = models.Role
 
 exports.register = async (req, res) => {    
     try{     
@@ -46,7 +48,15 @@ exports.login = async (req, res) => {
 
         res.send({
             message: 'Success login',
-            user: await User.findOne({where: {id: user.id}}),
+            user: await User.findOne({
+                where: {id: user.id},
+                include: [
+                    // Get the user's role
+                    {
+                        model: Role, as: 'role',  attributes: ['name'],
+                    }, 
+                ]
+            }),
             token: jwt.token,
             expiresIn: jwt.expiresIn
         })          

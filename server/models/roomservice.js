@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   RoomService.init({
     name: DataTypes.STRING,
     owner_id: DataTypes.BIGINT,
-    price_based_on: DataTypes.SMALLINT,
+    price_based_id: DataTypes.SMALLINT,
   }, {
     sequelize,
     modelName: 'RoomService',
