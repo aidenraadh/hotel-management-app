@@ -15,6 +15,7 @@ import RoomTypePage from './components/pages/RoomTypePage'
 import GuestTypePage from './components/pages/GuestTypePage'
 import RoomPage from './components/pages/RoomPage'
 import RoomServicePage from './components/pages/RoomServicePage'
+import ProfilePage from './components/pages/ProfilePage'
 
 function App(){
     const [sidebarShown, setSidebarShown] = useState(false)
@@ -49,10 +50,12 @@ function App(){
                         sidebarShown={sidebarShown}
                         toggleSidebar={setSidebarShown}
                         rightWidgets={[
-                            <UserThumbnail 
-                                userName={<Link to='/profile'>{user.name}</Link>}
-                                imgUrl={'/images/user_default_thumbnail.jpg'}
-                            />
+                            <Link to='/profile'>
+                                <UserThumbnail 
+                                    userName={user.name}
+                                    imgUrl={'/images/user_default_thumbnail.jpg'}
+                                />                            
+                            </Link>
                         ]}
                         sidebarItems={(() => {
                             const sidebarItemNames = [
@@ -66,6 +69,9 @@ function App(){
                     <Switch>
                         <Route path="/login" exact component={LoginPage}/>
                         <ProtectedRoute path={'/'} exact component={HomePage}/>
+                        <ProtectedRoute path={'/profile'} exact component={ProfilePage} props={{
+                            user: user
+                        }}/>                         
                         <ProtectedRoute path={'/room-types'} exact component={RoomTypePage} props={{
                             user: user, roomType: roomType, dispatchRoomType: dispatchRoomType
                         }}/>         

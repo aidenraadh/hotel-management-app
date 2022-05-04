@@ -19,7 +19,7 @@ const opts = {
 
 const authenticate = async (payload, done) => {  
     try{
-        const user = await User.findOne({
+        const user = await User.scope('withPassword').findOne({
             where: {id: payload.sub},
             include: [
                 // Get the user's role
