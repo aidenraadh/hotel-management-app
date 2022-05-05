@@ -1,12 +1,12 @@
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt  = require('passport-jwt').ExtractJwt
-const models = require('../models/index')
+const models      = require('../models/index')
 const path        = require('path')
 const fs          = require('fs')
 const logger      = require('../utils/logger')
 const User        = models.User
 const Role        = models.Role
-const Owner        = models.Owner
+const Hotel       = models.Hotel
 
 const pathToKey = path.join(__dirname, '..', 'id_rsa_pub.pem')
 const PUB_KEY = fs.readFileSync(pathToKey, 'utf8')
@@ -26,9 +26,9 @@ const authenticate = async (payload, done) => {
                 {
                     model: Role, as: 'role',  attributes: ['name'],
                 },       
-                // Get the user's owner
+                // Get the user's hotel
                 {
-                    model: Owner, as: 'owner',  attributes: ['id'],
+                    model: Hotel, as: 'hotel',  attributes: ['id'],
                 },                           
             ]
         })
@@ -36,6 +36,10 @@ const authenticate = async (payload, done) => {
         if(!user){
             return done(null, false)
         }
+        // When the hotel not found
+        if(!user.hotel){
+            return done(null, false)
+        }        
         return done(null, user)
     } catch (err){
         logger.error(err, {errObj: err})

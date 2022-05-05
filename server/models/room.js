@@ -5,7 +5,7 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Room extends Model {
 
-    static getPriceBasedOn(){
+    static getPricingTypes(){
       return {
         '1': 'room type',
         '2': 'guest type',
@@ -17,14 +17,16 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      models.Room.belongsTo(
+        models.RoomType, {foreignKey: 'room_type_id', as: 'roomType'}
+      ) 
     }
   };
   Room.init({
     name: DataTypes.STRING,
-    owner_id: DataTypes.BIGINT,
+    hotel_id: DataTypes.BIGINT,
     room_type_id: DataTypes.BIGINT,
-    price_based_id: DataTypes.SMALLINT,
+    pricing_type_id: DataTypes.SMALLINT,
   }, {
     sequelize,
     modelName: 'Room',

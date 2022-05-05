@@ -6,7 +6,7 @@ import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
 import Table from '../Table'
 import { Modal, ConfirmPopup } from '../Windows'
-import { api, errorHandler, getQueryString, formatNum } from '../Utils'
+import { api, errorHandler, getQueryString, formatNum, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
@@ -80,6 +80,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
+                setDisableBtn(false)
                 setErrPopupShown(true)
                 setErrPopupMsg(err.response.data.message)                   
             }})
@@ -114,6 +115,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
+                setDisableBtn(false)
                 setErrPopupShown(true)
                 setErrPopupMsg(err.response.data.message)                   
             }})
@@ -127,9 +129,11 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
 
     const deleteRoomType = useCallback(() => {
         const targetRoomType = roomType.roomTypes[roomTypeIndex] // Get the room type
+        setDisableBtn(true)
 
         api.delete(`/room-types/${targetRoomType.id}`)     
             .then(response => {   
+                setDisableBtn(false)
                 setSuccPopupMsg(response.data.message)
                 setSuccPopupShown(true)                     
                 dispatchRoomType({
@@ -138,8 +142,8 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                 })                
             })
             .catch(err => {
-                setDisableBtn(false)
                 errorHandler(err, {'400': () => {
+                    setDisableBtn(false)
                     setErrPopupShown(true)
                     setErrPopupMsg(err.response.data.message)                      
                 }})               
@@ -174,10 +178,11 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                 <section className='flex-row items-center'>
                     <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
                         formAttr={{
-                            placeholder: 'Search room type', value: filters.name,
+                            placeholder: 'Search room types', value: filters.name,
                             onChange: (e) => {dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
                                 key: 'name', value: e.target.value
-                            }})}
+                            }})},
+                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRoomTypes(ACTIONS.RESET)})}                              
                         }}
                     />
                     <Button text={'Search'} iconName={'search'} iconOnly={'true'} attr={{
@@ -221,13 +226,19 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
             body={<Grid numOfColumns={1} items={[
                 <TextInput label={'Room type name'}
                     formAttr={{
-                        value: name, onChange: (e) => {setName(e.target.value)}
+                        value: name, onChange: (e) => {setName(e.target.value)},
+                        onKeyUp: (e) => {keyHandler(
+                            e, 'Enter', (roomTypeIndex === '' ? storeRoomType : updateRoomType)
+                        )}
                     }}
                 />,
                 <TextInput label={'Room price'}
                     formAttr={{
                         value: formatNum(roomPrice), 
-                        onChange: (e) => {setRoomPrice(formatNum(e.target.value, true))}
+                        onChange: (e) => {setRoomPrice(formatNum(e.target.value, true))},
+                        onKeyUp: (e) => {keyHandler(
+                            e, 'Enter', (roomTypeIndex === '' ? storeRoomType : updateRoomType)
+                        )}                        
                     }}
                 />,                    
             ]}/>}
@@ -275,7 +286,7 @@ const RoomTypesTable = ({roomTypes, editHandler, deleteHandler}) => {
         headings={['Name', 'Room Price', 'Actions']}
         body={roomTypes.map((roomType, index) => ([
             roomType.name, 
-            'Rp. '+formatNum(roomType.room_price),
+            'Rp. '+(roomType.room_price ? formatNum(roomType.room_price) : 0),
             <>
                 <Button size={'sm'} type={'light'} text={'Edit'} attr={{
                     onClick: () => {editHandler(index)}

@@ -5,6 +5,7 @@ const logger = require('../utils/logger')
 const path   = require('path')
 const fs     = require('fs')
 const User   = models.User
+const Hotel  = models.Hotel
 const Role   = models.Role
 
 exports.register = async (req, res) => {    
@@ -36,10 +37,18 @@ exports.login = async (req, res) => {
     try{
         const user = await User.scope('withPassword').findOne({
             where: {email: req.body.email},
+            include: [
+                {
+                    model: Hotel, as: 'hotel', attributes: ['id']
+                }
+            ]
         })
         if(!user){
             return res.status(400).send({message: 'Invalid credentials'})
         }
+        if(!user.hotel){
+            return res.status(400).send({message: 'Invalid credentials'})
+        }        
         if(!await bcrypt.compare(req.body.password, user.password)){
             return res.status(400).send({message: 'Invalid credentials'})
         }

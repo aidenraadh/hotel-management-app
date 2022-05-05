@@ -1,20 +1,20 @@
 'use strict';
 
 const model    = require('../../models/index')
-const Owner    = model.Owner
+const Hotel    = model.Hotel
 const RoomType = model.RoomType
 const Room     = model.Room
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const owner = await Owner.findOne()
+    const hotel = await Hotel.findOne()
     const roomType = await RoomType.findOne({
-      where: {owner_id: owner.id}
+      where: {hotel_id: hotel.id}
     })
     const rooms = [
       {
-        name: '1', owner_id: owner.id, room_type_id: roomType.id,
-        price_based_id: 1
+        name: '1', hotel_id: hotel.id, room_type_id: roomType.id,
+        pricing_type_id: 1
       }
     ]
 

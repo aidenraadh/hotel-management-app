@@ -10,54 +10,7 @@ const Role          = models.Role
 
 exports.index = async (req, res) => {    
     try{
-        // Set filters
-        const filters = {
-            where: {},
-            limitOffset: {
-                limit: parseInt(req.query.limit) ? parseInt(req.query.limit) : 10,
-                offset: parseInt(req.query.offset) ? parseInt(req.query.offset) : 0                
-            }
-        }
-        // Make sure the user's role exists
-        let role = null
-        const {value, error} = Joi.string().required().validate(req.query.role)
-        if(error === undefined){
-            role = await Role.findOne({
-                where: {name: {[Op.iLike]: `%${value}%`}},
-                attributes: ['id']
-            })
-        }
-        // Get the users by role
-        const users = await User.findAll({
-            where: {role_id: role ? role.id : 0, owner_id: req.user.owner_id},
-            include: (() => {
-                let include = [
-                    // Get the user's role
-                    {
-                        model: Role, as: 'role',  attributes: ['name'],
-                    }, 
-                ]
-                // Get the user's store employee if the queried user is employee
-                if(req.query.role === 'employee'){
-                    include.push({
-                        model: StoreEmployee, as: 'storeEmployee', 
-                        attributes: ['user_id', 'store_id'],
-                        include: [{
-                            model: Store, as: 'store', 
-                            attributes: ['name'],
-                        }]
-                    })
-                }
-                return include
-            })(),
-            order: [['id', 'DESC']],
-            ...filters.limitOffset
-        })
-       
-        res.send({
-            users: users,
-            filters: {...filters.where, ...filters.limitOffset}
-        })
+
     }
     catch(err){
         logger.error(err, {errorObj: err})

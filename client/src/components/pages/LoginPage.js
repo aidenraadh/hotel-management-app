@@ -15,7 +15,7 @@ const LoginPage = (props) => {
         background: 'url("/images/bg-1.jpg") no-repeat scroll center',
         backgroundSize: 'cover',
     }
-    const asd = useCallback(() => {
+    const requestLogin = useCallback(() => {
         api
         .post('/login', {
             email: email, password: password
@@ -43,7 +43,7 @@ const LoginPage = (props) => {
                     formAttr={{
                         value: email, placeholder: 'Email', 
                         onChange: (e) => {setEmail(e.target.value)},
-                        onKeyUp: (e) => {keyHandler(e, 'Enter', asd)}
+                        onKeyUp: (e) => {keyHandler(e, 'Enter', requestLogin)}
                     }} 
                 />,
                 <TextInputWithBtn size={'lg'} btnIconName={passwordShown ? 'visible' : 'hidden'}
@@ -52,7 +52,7 @@ const LoginPage = (props) => {
                         type: passwordShown ? 'text' : 'password', 
                         value: password, placeholder: 'Password', 
                         onChange: (e) => {setPassword(e.target.value)},
-                        onKeyUp: (e) => {keyHandler(e, 'Enter', asd)}                        
+                        onKeyUp: (e) => {keyHandler(e, 'Enter', requestLogin)}                        
                     }} 
                 />,     
                 <Button 
@@ -62,22 +62,6 @@ const LoginPage = (props) => {
             ]}/>
         </div>
     </>)
-}
-
-const requestLogin = (email, password) => {
-    api
-        .post('/login', {
-            email: email, password: password
-        })
-        .then(response => login(response))
-        .catch(error => {
-            if(error.response.status === 400){
-                alert(error.response.data.message)
-            }            
-            if(error.response.status === 401){
-                login()
-            }
-        })
 }
 
 export default LoginPage

@@ -9,10 +9,10 @@ module.exports = {
         updated_at: currentTime          
       },      
     ]
-    await queryInterface.bulkInsert('owners', owners);
+    await queryInterface.bulkInsert('hotels', owners);
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('owners', null, {});
+    await queryInterface.bulkDelete('hotels', null, {});
   }
 };

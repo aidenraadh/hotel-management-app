@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      owner_id: {
+      hotel_id: {
         type: Sequelize.DataTypes.BIGINT,
         allowNull: false,
       },     
@@ -20,7 +20,7 @@ module.exports = {
         type: Sequelize.DataTypes.BIGINT,
         allowNull: false,
       },               
-      price_based_id: {
+      pricing_type_id: {
         type: Sequelize.DataTypes.SMALLINT,
         allowNull: false,
       },                
@@ -37,13 +37,13 @@ module.exports = {
         type: Sequelize.DATE
       }  
     });
-    // Add foreign key to owner_id
+    // Add foreign key to hotel_id
     await queryInterface.addConstraint('rooms', {
-      fields: ['owner_id'],
+      fields: ['hotel_id'],
       type: 'foreign key',
-      name: 'fk_rooms_owner_id',
+      name: 'fk_rooms_hotel_id',
       references: {
-        table: 'owners',
+        table: 'hotels',
         field: 'id',
       }
     }) 
@@ -59,7 +59,7 @@ module.exports = {
     })        
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeConstraint('rooms', 'fk_rooms_owner_id');
+    await queryInterface.removeConstraint('rooms', 'fk_rooms_hotel_id');
     await queryInterface.removeConstraint('rooms', 'fk_rooms_room_type_id');
     await queryInterface.dropTable('rooms');
   }

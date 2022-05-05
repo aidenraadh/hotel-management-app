@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   GuestType.init({
     name: DataTypes.STRING,
-    owner_id: DataTypes.BIGINT,
+    hotel_id: DataTypes.BIGINT,
     room_price: DataTypes.INTEGER,
   }, {
     sequelize,

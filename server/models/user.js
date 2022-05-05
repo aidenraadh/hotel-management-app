@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {          
       models.User.belongsTo(
-        models.Owner, {foreignKey: 'owner_id', as: 'owner'}
+        models.Hotel, {foreignKey: 'hotel_id', as: 'hotel'}
       )      
       models.User.belongsTo(
         models.Role, {foreignKey: 'role_id', as: 'role'}
@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
     email: DataTypes.STRING,
     password: DataTypes.STRING,
     role_id: DataTypes.SMALLINT,
-    owner_id: DataTypes.BIGINT,
+    hotel_id: DataTypes.BIGINT,
     language_id: DataTypes.SMALLINT,
   }, {
     sequelize,
