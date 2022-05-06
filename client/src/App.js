@@ -5,6 +5,7 @@ import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
 import roomTypeReducer, {INIT_STATE as ROOM_TYPE_INIT_STATE} from "./reducers/RoomTypeReducer";
 import guestTypeReducer, {INIT_STATE as GUEST_TYPE_INIT_STATE} from "./reducers/GuestTypeReducer";
 import roomReducer, {INIT_STATE as ROOM_INIT_STATE} from "./reducers/RoomReducer";
+import roomPricingReducer, {INIT_STATE as ROOM_PRICING_INIT_STATE} from "./reducers/RoomPricingReducer";
 
 import ProtectedRoute from './components/ProtectedRoute'
 import {isAuth, getUser} from './components/Auth'
@@ -17,6 +18,7 @@ import RoomTypePage from './components/pages/RoomTypePage'
 import GuestTypePage from './components/pages/GuestTypePage'
 import RoomPage from './components/pages/RoomPage'
 import RoomServicePage from './components/pages/RoomServicePage'
+import IndexRoomPricingPage from './components/pages/room_pricing/IndexRoomPricingPage'
 import ProfilePage from './components/pages/ProfilePage'
 
 function App(){
@@ -24,6 +26,7 @@ function App(){
     const [roomType, dispatchRoomType] = useReducer(roomTypeReducer, ROOM_TYPE_INIT_STATE)   
     const [guestType, dispatchGuestType] = useReducer(guestTypeReducer, GUEST_TYPE_INIT_STATE) 
     const [room, dispatchRoom] = useReducer(roomReducer, ROOM_INIT_STATE)    
+    const [roomPricing, dispatchRoomPricing] = useReducer(roomPricingReducer, ROOM_PRICING_INIT_STATE)  
     const user = getUser()
 
     const sidebarItems = {
@@ -41,7 +44,10 @@ function App(){
         },        
         room_service: {
             icon: 'commode_1', text: 'Room Services', link: 'room-services'
-        },        
+        },     
+        room_pricing: {
+            icon: 'sale_1', text: 'Room Pricings', link: 'room-pricings'
+        },                   
     }
     const userAuth = isAuth()
         
@@ -63,7 +69,8 @@ function App(){
                         ]}
                         sidebarItems={(() => {
                             const sidebarItemNames = [
-                                'dashboard', 'room_type', 'guest_type', 'room', 'room_service'
+                                'dashboard', 'room_type', 'guest_type', 'room', 'room_service',
+                                'room_pricing'
                             ]
                             return sidebarItemNames.map(name => sidebarItems[name])
                         })()}	
@@ -87,7 +94,10 @@ function App(){
                         }}/>
                         <ProtectedRoute path={'/room-services'} exact component={RoomServicePage} props={{
                             user: user
-                        }}/>                        
+                        }}/>        
+                        <ProtectedRoute path={'/room-pricings'} exact component={IndexRoomPricingPage} props={{
+                            user: user, roomPricing: roomPricing, dispatchRoomPricing: dispatchRoomPricing
+                        }}/>                                          
                     </Switch>                    
                 </div>     
             </Router>

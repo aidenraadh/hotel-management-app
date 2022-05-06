@@ -1,26 +1,25 @@
 import { useCallback, useEffect, useReducer, useState } from 'react'
 
-import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../reducers/RoomTypeReducer'
+import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../../reducers/RoomPricingReducer'
 
-import { Button } from '../Buttons'
-import {PlainCard} from '../Cards'
-import Table from '../Table'
-import { Modal, ConfirmPopup } from '../Windows'
-import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
-import { Grid } from '../Layouts'
-import { Select, TextInput } from '../Forms'
+import { Button } from '../../Buttons'
+import {PlainCard} from '../../Cards'
+import Table from '../../Table'
+import { Modal, ConfirmPopup } from '../../Windows'
+import { api, errorHandler, formatNum, getQueryString, keyHandler } from '../../Utils'
+import { Grid } from '../../Layouts'
+import { Select, TextInput } from '../../Forms'
 
-function RoomTypePage({roomType, dispatchRoomType, user}){
+function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
     const [disableBtn , setDisableBtn] = useState(false)
     // Filter room types
     const [filters, dispatchFilters] = useReducer(filterReducer, getFilters())
     const [filterModalShown, setFilterModalShown] = useState(false)
-    // Create / edit room type
-    const [roomTypeIndex, setRoomTypeIndex] = useState('')
-    const [name, setName] = useState('')
-    const [makeRoomTypeMdlheading, setMakeRoomTypeMdlheading] = useState('')
-    const [makeRoomTypeMdlShown, setMakeRoomTypeMdlShown] = useState(false)
+    // View room pricings
+    const [viewedRoomType, setViewedRoomType] = useState('')
+    const [viewRoomPricingsMdlShown, setViewRoomPricingsMdlShown] = useState(false)
     /* Delete room type */
+    const [roomTypeIndex, setRoomTypeIndex] = useState('')
     const [popupShown, setPopupShown] = useState(false)    
     /* Error Popup */
     const [errPopupShown, setErrPopupShown] = useState(false)
@@ -29,16 +28,16 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
     const [succPopupShown, setSuccPopupShown] = useState(false)
     const [popupSuccMsg, setSuccPopupMsg] = useState('')    
 
-    const getRoomTypes = useCallback((actionType) => {
+    const getRoomPricings = useCallback((actionType) => {
         // Get the queries
         const queries = {...filters}     
         // When the room type is refreshed, set the offset to 0
         queries.offset = actionType === ACTIONS.RESET ? 0 : (queries.offset + queries.limit)  
 
-        if(roomType.initialLoad === false){
+        if(roomPricing.initialLoad === false){
             setDisableBtn(true)
         }                  
-        api.get(`/room-types${getQueryString(filters)}`)
+        api.get(`/room-pricings${getQueryString(filters)}`)
         .then(response => {
             const responseData = response.data
             setDisableBtn(false)
@@ -46,7 +45,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
             dispatchFilters({type: FILTER_ACTIONS.RESET, payload: {
                 filters: responseData.filters,
             }})
-            dispatchRoomType({type: actionType, payload: {
+            dispatchRoomPricing({type: actionType, payload: {
                 roomTypes: responseData.roomTypes,
                 filters: responseData.filters
             }})
@@ -54,86 +53,28 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
         .catch(error => {
             errorHandler(error)
         })
-    }, [filters, roomType.initialLoad, dispatchRoomType])
+    }, [filters, roomPricing.initialLoad, dispatchRoomPricing])
 
-    const createRoomType = useCallback(() => {
-        setRoomTypeIndex('')
-        setName('')
-        setMakeRoomTypeMdlheading('Create Room Type')
-        setMakeRoomTypeMdlShown(true)        
-    }, [])
+    const viewRoomPricing = useCallback(index => {
+        setViewedRoomType(roomPricing.roomTypes[index])
+        setViewRoomPricingsMdlShown(true)
+    })    
 
-    const storeRoomType = useCallback(() => {
-        setDisableBtn(true)
-
-        api.post(`/room-types`, {
-            name: name,
-        })
-        .then(response => {
-            setDisableBtn(false)
-            setMakeRoomTypeMdlShown(false)                
-            dispatchRoomType({type: ACTIONS.PREPEND, payload: {
-                roomTypes: response.data.roomType,
-            }})
-        })
-        .catch(err => {
-            errorHandler(err, {'400': () => {
-                setDisableBtn(false)
-                setErrPopupShown(true)
-                setErrPopupMsg(err.response.data.message)                   
-            }})
-        })
-    }, [dispatchRoomType, name])
-
-    const editRoomType = useCallback((index) => {
-        const targetRoomType = roomType.roomTypes[index] // Get the room type
-        setRoomTypeIndex(index)
-        setName(targetRoomType.name)
-        setMakeRoomTypeMdlheading('Edit Room Type')
-        setMakeRoomTypeMdlShown(true)
-    }, [roomType.roomTypes])
-
-    const updateRoomType = useCallback(() => {
-        const targetRoomType = roomType.roomTypes[roomTypeIndex] // Get the room type
-        setDisableBtn(true)
-
-        api.put(`/room-types/${targetRoomType.id}`, {
-            name: name,
-        })
-        .then(response => {
-            setDisableBtn(false)
-            setMakeRoomTypeMdlShown(false)      
-            setSuccPopupMsg(response.data.message)
-            setSuccPopupShown(true)                         
-            dispatchRoomType({type: ACTIONS.REPLACE, payload: {
-                roomType: response.data.roomType,
-                index: roomTypeIndex
-            }})
-        })
-        .catch(err => {
-            errorHandler(err, {'400': () => {
-                setDisableBtn(false)
-                setErrPopupShown(true)
-                setErrPopupMsg(err.response.data.message)                   
-            }})
-        })
-    }, [dispatchRoomType, name, roomType.roomTypes, roomTypeIndex])
-
-    const confirmDeleteRoomType = useCallback(index => {
+    const confirmDeleteRoomPricing = useCallback(index => {
         setRoomTypeIndex(index)
         setPopupShown(true)
     }, [])    
 
-    const deleteRoomType = useCallback(() => {
-        const targetRoomType = roomType.roomTypes[roomTypeIndex] // Get the room type
+    const deleteRoomPricing = useCallback(() => {
+        const targetRoomType = roomPricing.roomTypes[roomTypeIndex] // Get the pricing
         setDisableBtn(true)
 
-        api.delete(`/room-types/${targetRoomType.id}`)     
+        api.delete(`/room-pricings/${targetRoomType.id}`)     
             .then(response => {   
                 setDisableBtn(false)
                 setSuccPopupMsg(response.data.message)
                 setSuccPopupShown(true)                     
-                dispatchRoomType({
+                dispatchRoomPricing({
                     type: ACTIONS.REMOVE, 
                     payload: {indexes: roomTypeIndex}
                 })                
@@ -145,16 +86,16 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                     setErrPopupMsg(err.response.data.message)                      
                 }})               
             })          
-    }, [dispatchRoomType, roomType.roomTypes, roomTypeIndex])
+    }, [dispatchRoomPricing, roomPricing.roomTypes, roomTypeIndex])
 
 
     useEffect(() => {       
-        if(roomType.initialLoad === false){
-            getRoomTypes(ACTIONS.RESET)
+        if(roomPricing.initialLoad === false){
+            getRoomPricings(ACTIONS.RESET)
         }
-    }, [roomType.initialLoad, getRoomTypes])
+    }, [roomPricing.initialLoad, getRoomPricings])
     
-    if(roomType.initialLoad === false){
+    if(roomPricing.initialLoad === false){
         return 'Loading ...'
     }
     return <>
@@ -167,7 +108,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
             />
             <Button
                 size={'sm'} text={'+ Create'} 
-                attr={{onClick: createRoomType}}
+                attr={{onClick: () => {}}}
             />            
         </section>    
         <PlainCard
@@ -179,19 +120,19 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                             onChange: (e) => {dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
                                 key: 'name', value: e.target.value
                             }})},
-                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRoomTypes(ACTIONS.RESET)})}                              
+                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRoomPricings(ACTIONS.RESET)})}                              
                         }}
                     />
                     <Button text={'Search'} iconName={'search'} iconOnly={'true'} attr={{
                         style: {flexShrink: 0},
                         disabled: disableBtn,
-                        onClick: () => {getRoomTypes(ACTIONS.RESET)}
+                        onClick: () => {getRoomPricings(ACTIONS.RESET)}
                     }}/>      
                 </section>,
-                <RoomTypesTable
-                    roomTypes={roomType.roomTypes}
-                    editHandler={editRoomType}
-                    deleteHandler={confirmDeleteRoomType}
+                <RoomPricingsTable
+                    roomTypes={roomPricing.roomTypes}
+                    viewHandler={viewRoomPricing}
+                    deleteHandler={confirmDeleteRoomPricing}
                 />     
             ]}/>}
         />
@@ -212,33 +153,15 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                 ]}/>
             </>}
             footer={<Button text={'Filter'} attr={{
-                disabled: disableBtn, onClick: () => {getRoomTypes(ACTIONS.RESET)}
+                disabled: disableBtn, onClick: () => {getRoomPricings(ACTIONS.RESET)}
             }}/>}
-        />
+        />      
         <Modal
-            size={'sm'} 
-            shown={makeRoomTypeMdlShown}
-            toggleModal={() => {setMakeRoomTypeMdlShown(state => !state)}}
-            heading={makeRoomTypeMdlheading}
-            body={<Grid numOfColumns={1} items={[
-                <TextInput label={'Room type name'}
-                    formAttr={{
-                        value: name, onChange: (e) => {setName(e.target.value)},
-                        onKeyUp: (e) => {keyHandler(
-                            e, 'Enter', (roomTypeIndex === '' ? storeRoomType : updateRoomType)
-                        )}
-                    }}
-                />,                  
-            ]}/>}
-            footer={<Button text={'Save changes'} attr={{
-                disabled: disableBtn, onClick: () => {
-                    // When creating room type
-                    if(roomTypeIndex === ''){ storeRoomType() }
-                    // When creating room type
-                    else{ updateRoomType() }
-                }
-            }}/>}
-        />        
+            shown={viewRoomPricingsMdlShown}
+            toggleModal={() => {setViewRoomPricingsMdlShown(state => !state)}}
+            heading={'Room Pricings Detail'}
+            body={<RoomPricingsDetail roomType={viewedRoomType}/>}
+        />           
         <ConfirmPopup
             icon={'warning_1'}
             title={'Warning'}
@@ -246,7 +169,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
             confirmText={'Remove'}
             cancelText={'Cancel'}
             shown={popupShown} togglePopup={() => {setPopupShown(state => !state)}} 
-            confirmCallback={deleteRoomType}
+            confirmCallback={deleteRoomPricing}
         />
         <ConfirmPopup
             shown={errPopupShown}
@@ -269,14 +192,14 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
     </>
 }
 
-const RoomTypesTable = ({roomTypes, editHandler, deleteHandler}) => {
+const RoomPricingsTable = ({roomTypes, viewHandler, deleteHandler}) => {
     return <Table
-        headings={['Name', 'Actions']}
+        headings={['Room Type', 'Actions']}
         body={roomTypes.map((roomType, index) => ([
             roomType.name, 
             <>
-                <Button size={'sm'} type={'light'} text={'Edit'} attr={{
-                    onClick: () => {editHandler(index)}
+                <Button size={'sm'} type={'light'} text={'View pricing'} attr={{
+                    onClick: () => {viewHandler(index)}
                 }}/>
                 <Button size={'sm'} type={'light'} color={'red'} text={'Delete'} attr={{
                     style: {marginLeft: '1rem'},
@@ -287,4 +210,50 @@ const RoomTypesTable = ({roomTypes, editHandler, deleteHandler}) => {
     />
 }
 
-export default RoomTypePage
+const RoomPricingsDetail = ({roomType}) => {
+    if(!roomType){
+        return ''
+    }
+    const dayNames = [
+        'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+        'saturday', 'sunday'
+    ]
+    return <Grid numOfColumns={1} items={roomType.roomPricings.map((roomPricing, roomPricingIdx) => {
+
+        let priceAndDays = {}
+        dayNames.forEach(day => {
+            const price = roomPricing[`price_on_${day}`].toString()
+            if(priceAndDays[price]){
+                priceAndDays[price].push(day)
+            }
+            else{
+                priceAndDays[price] = [day]
+            }
+        })
+        const Pricings = Object.keys(priceAndDays).map((price, index) => (
+            <div key={index}>
+                <div className='flex-row items-center content-space-between'>
+                    <span>Price:</span>
+                    <span className='text-capitalize'>{'Rp. '+formatNum(price)}</span>
+                </div>
+                <ul className='text-capitalize flex-row wrap items-center'>
+                    {priceAndDays[price].map(day => (
+                        <li style={{width: '33%'}}>{day}</li>
+                    ))}
+                </ul>
+            </div>
+        ))
+        return (
+            <div key={roomPricingIdx}>
+                <div className='flex-row items-center content-space-between'>
+                    <span>Guest type:</span>
+                    <span className='text-capitalize'>{roomPricing.guestType.name}</span>
+                </div>     
+                {Pricings}           
+            </div>
+        )
+    })}
+    />
+}
+
+export default IndexRoomPricingPage

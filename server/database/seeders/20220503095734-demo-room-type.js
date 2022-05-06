@@ -10,7 +10,7 @@ module.exports = {
 
     const roomTypes = [
       {
-        name: 'VIP', hotel_id: hotel.id, room_price: 120000,
+        name: 'VIP', hotel_id: hotel.id,
       }
     ]
 

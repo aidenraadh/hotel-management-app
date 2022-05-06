@@ -1,5 +1,7 @@
 const model      = require('../models/index')
-const GuestType  = model.GuestType
+const RoomPricing   = model.RoomPricing
+const RoomType   = model.RoomType
+const GuestType   = model.GuestType
 const Sequelize  = require("sequelize")
 const {Op}       = require("sequelize")
 const Joi        = require('joi')
@@ -20,18 +22,30 @@ exports.index = async (req, res) => {
             const {value, error} = Joi.string().required().trim().validate(req.query.name)
             if(error === undefined){ filters.where.name = value }
         }
-        const guestTypes = await GuestType.findAll({
+        const roomTypes = await RoomType.findAll({
             attributes: ['id', 'name'],
             where: (() => {
                 const where = {...filters.where, hotel_id: req.user.hotel_id}
                 if(where.name){ where.name =  {[Op.iLike]: `%${where.name}%`}}
                 return where
             })(),
+            include: [
+                {
+                    model: RoomPricing, as: 'roomPricings',
+                    attributes: {exclude: ['room_type_id', 'guest_type_id']},
+                    include: [
+                        {
+                            model: GuestType, as: 'guestType',
+                            attributes: ['id', 'name']
+                        }
+                    ]
+                }
+            ],
             order: [['id', 'DESC']],
             ...filters.limitOffset
         })
         res.send({
-            guestTypes: guestTypes,
+            roomTypes: roomTypes,
             filters: {...filters.where, ...filters.limitOffset}
         })
     } catch(err) {
@@ -46,12 +60,12 @@ exports.store = async (req, res) => {
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
-        const guestType = await GuestType.create({
+        const roomType = await RoomType.create({
             name: values.name, hotel_id: req.user.hotel_id,
         })
-        res.send({
-            guestType: guestType,
-            message: 'Guest type successfully created'
+        return res.send({
+            roomType: roomType,
+            message: 'Room type successfully created'
         })        
     } catch (err) {
         logger.error(err, {errorObj: err})
@@ -61,43 +75,43 @@ exports.store = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
-        const guestType = await getGuestType(req.params.id, req.user.hotel_id)
-        if(!guestType){
-            return res.status(400).send({message: 'Guest type not found'})
+        const roomType = await getRoomType(req.params.id, req.user.hotel_id)
+        if(!roomType){
+            return res.status(400).send({message: 'Room type not found'})
         }
         const {values, errMsg} = await validateInput(req, ['name'])
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
-        guestType.name = values.name
+        roomType.name = values.name
         
-        await guestType.save()    
+        await roomType.save()    
     
         res.send({
-            guestType: guestType,
-            message: 'Guest type successfully updated'
-        }) 
+            roomType: roomType,
+            message: 'Room type successfully updated'
+        })          
     } catch (err) {
         logger.error(err, {errorObj: err})
-        res.status(500).send({message: err.message})             
-    }   
+        res.status(500).send({message: err.message})          
+    }  
 }
 
 exports.destroy = async (req, res) => {
     try {
-        const guestType = await getGuestType(req.params.id, req.user.hotel_id)
-        if(!guestType){
-            return res.status(400).send({message: 'Guest type not found'})
+        const roomType = await getRoomType(req.params.id, req.user.hotel_id)
+        if(!roomType){
+            return res.status(400).send({message: 'Room type not found'})
         }
-        await guestType.destroy()
-    
+        await roomType.destroy()
+        
         res.send({
-            message: 'Guest type successfully deleted'
-        }) 
+            message: 'Room type successfully deleted'
+        })            
     } catch (err) {
         logger.error(err, {errorObj: err})
-        res.status(500).send({message: err.message})   
-    }    
+        res.status(500).send({message: err.message})         
+    } 
 }
 
 /**
@@ -111,24 +125,24 @@ const validateInput = async (req, inputKeys) => {
     try {
         const input = filterKeys(req.body, inputKeys)
         const rules = {
-            // Make sure the guest type name is unique by hotel
+            // Make sure the room type name is unique by hotel
             name: Joi.string().required().trim().max(100).external(async (value, helpers) => {
                 const filters = [
                     Sequelize.where(Sequelize.fn('lower', Sequelize.col('name')), Sequelize.fn('lower', value)),
                     {hotel_id: req.user.hotel_id}                    
                 ]
-                // When the guest type is updated
+                // When the room type is updated
                 if(req.params.id){
                     filters.push({[Op.not]: [{id: req.params.id}]})                    
                 }
-                const guestType = await GuestType.findOne({where: filters, attributes: ['id']})
+                const roomType = await RoomType.findOne({where: filters, attributes: ['id']})
 
-                if(guestType){
-                    throw {message: 'The guest type name already taken'}
+                if(roomType){
+                    throw {message: 'The room type name already taken'}
                 }
                 return value
             }).messages({
-                'string.max': 'The guest type name must below 100 characters',
+                'string.max': 'The room type name must below 100 characters',
             }),
         }
         // Create the schema based on the input key
@@ -152,9 +166,9 @@ const validateInput = async (req, inputKeys) => {
  * @returns object
  */
 
-const getGuestType = async (id, hotelId) => {
+const getRoomType = async (id, hotelId) => {
     try {
-        return await GuestType.findOne({where: {
+        return await RoomType.findOne({where: {
             id: id, hotel_id: hotelId
         }})
     } catch (error) {

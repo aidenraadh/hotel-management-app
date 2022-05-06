@@ -16,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
   RoomService.init({
     name: DataTypes.STRING,
     hotel_id: DataTypes.BIGINT,
-    pricing_type_id: DataTypes.SMALLINT,
   }, {
     sequelize,
     modelName: 'RoomService',

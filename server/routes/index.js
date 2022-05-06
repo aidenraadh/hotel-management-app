@@ -1,11 +1,12 @@
-const rootRouter          = require('express').Router()
-const AuthController      = require('../controllers/AuthController')
-const UserController      = require('../controllers/UserController')
-const RoomTypeController  = require('../controllers/RoomTypeController')
-const GuestTypeController = require('../controllers/GuestTypeController')
-const RoomController      = require('../controllers/RoomController')
-const isAuth              = require('../middlewares/isAuth')
-const isNotAuth           = require('../middlewares/isNotAuth')
+const rootRouter            = require('express').Router()
+const AuthController        = require('../controllers/AuthController')
+const UserController        = require('../controllers/UserController')
+const RoomTypeController    = require('../controllers/RoomTypeController')
+const GuestTypeController   = require('../controllers/GuestTypeController')
+const RoomController        = require('../controllers/RoomController')
+const RoomPricingController = require('../controllers/RoomPricingController')
+const isAuth                = require('../middlewares/isAuth')
+const isNotAuth             = require('../middlewares/isNotAuth')
 
 rootRouter.post('/register', [
     isNotAuth, AuthController.register
@@ -35,5 +36,8 @@ rootRouter
     .post('/rooms', [isAuth, RoomController.store])
     .put('/rooms/:id', [isAuth, RoomController.update])
     .delete('/rooms/:id', [isAuth, RoomController.destroy])
+
+rootRouter
+    .get('/room-pricings', [isAuth, RoomPricingController.index])  
     
 module.exports = rootRouter

@@ -1,9 +1,9 @@
 import { saveResFilters, getResFilters } from "../components/Utils";
 
 export const INIT_STATE = {
-    rooms: [], // Array of rooms
-    canLoadMore: true, // Wheter or not the rooms can be loaded more
-    initialLoad: false, // Wheter or not the room load is the first load
+    roomTypes: [], // Array of room types
+    canLoadMore: true, // Wheter or not the room types can be loaded more
+    initialLoad: false, // Wheter or not the room types load is the first load
 }
 export const ACTIONS = {
     APPEND: 'APPEND', 
@@ -13,65 +13,64 @@ export const ACTIONS = {
     RESET: 'RESET',
 }
 
-export const FILTER_KEY = 'room'
+export const FILTER_KEY = 'roomPricing'
 export const FILTER_ACTIONS = {
     UPDATE: 'UPDATE', RESET: 'RESET'
 }
 
-const roomReducer = (state, action) => {
+const roomPricingReducer = (state, action) => {
     const {type, payload} = action
 
     switch(type){
-        // Append room(s) to 'rooms'
+        // Append room type(s) to 'roomTypes'
         case ACTIONS.APPEND: 
             return {
-                ...state, rooms: (
-                    Array.isArray(payload.rooms) ? 
-                    [...state.rooms, ...payload.rooms] : 
-                    [...state.rooms, payload.rooms]
+                ...state, roomTypes: (
+                    Array.isArray(payload.roomTypes) ? 
+                    [...state.roomTypes, ...payload.roomTypes] : 
+                    [...state.roomTypes, payload.roomTypes]
                 ),
-                canLoadMore: payload.rooms.length < payload.filters.limit ? false : true,
+                canLoadMore: payload.roomTypes.length < payload.filters.limit ? false : true,
                 initialLoad: true
             }; 
-        // Prepend array of room(s) to 'rooms'
+        // Prepend array of room pricings(s) to 'roomTypes'
         case ACTIONS.PREPEND: 
             return {
-                ...state, rooms: (
-                    Array.isArray(payload.rooms) ? 
-                    [...payload.rooms, ...state.rooms] : 
-                    [payload.rooms, ...state.rooms]                
+                ...state, roomTypes: (
+                    Array.isArray(payload.roomTypes) ? 
+                    [...payload.roomTypes, ...state.roomTypes] : 
+                    [payload.roomTypes, ...state.roomTypes]                
                 ),
 
             };
-        // Replace a room inside 'rooms'
+        // Replace a room type inside 'roomTypes'
         case ACTIONS.REPLACE: 
             return {
-                ...state, rooms: (() => {
-                    const rooms = [...state.rooms]
-                    rooms[payload.index] = payload.room
-                    return rooms
+                ...state, roomTypes: (() => {
+                    const roomPricings = [...state.roomTypes]
+                    roomPricings[payload.index] = payload.roomPricing
+                    return roomPricings
                 })()
             };            
-        // Remove room(s) from 'rooms'
+        // Remove room type(s) from 'roomTypes'
         case ACTIONS.REMOVE: 
             return {
-                ...state, rooms: (() => {
-                    let rooms = [...state.rooms]
+                ...state, roomTypes: (() => {
+                    let roomTypes = [...state.roomTypes]
                     if(Array.isArray(payload.indexes)){
-                        payload.indexes.forEach(index => {rooms.splice(index, 1)})
-                        return rooms
+                        payload.indexes.forEach(index => {roomTypes.splice(index, 1)})
+                        return roomTypes
                     }
-                    rooms.splice(payload.indexes, 1)
+                    roomTypes.splice(payload.indexes, 1)
 
-                    return rooms
+                    return roomTypes
                 })()
             }; 
-        // Reset room(s) from 'rooms'
+        // Reset room type(s) from 'roomTypes'
         case ACTIONS.RESET: 
             return {
-                ...state, rooms: [...payload.rooms],
-                roomTypesList: [...payload.roomTypesList],
-                canLoadMore: payload.rooms.length < payload.filters.limit ? false : true,
+                ...state, roomTypes: [...payload.roomTypes],
+                canLoadMore: payload.roomTypes.length < payload.filters.limit ? false : true,
                 initialLoad: true
             };             
         // Error
@@ -86,7 +85,6 @@ export const filterReducer = (state, action) => {
         saveResFilters(FILTER_KEY, payload.filters);
     }
     switch(type){
-        // Append room(s) to 'rooms'
         case FILTER_ACTIONS.UPDATE: 
             if(payload.key === 'limit'){
                 payload.value = parseInt(payload.value)
@@ -94,7 +92,6 @@ export const filterReducer = (state, action) => {
             return {
                 ...state, [payload.key]: payload.value
             }; 
-        // Prepend array of room(s) to 'rooms'
         case FILTER_ACTIONS.RESET: 
             return {
                 ...state, ...payload.filters
@@ -114,4 +111,4 @@ export const getFilters = () => {
     return {...defaultFilters, ...filters}
 }
 
-export default roomReducer
+export default roomPricingReducer

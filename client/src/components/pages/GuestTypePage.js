@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useReducer, useState } from 'react'
 
 import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../reducers/GuestTypeReducer'
-import { Button } from '../Buttons'
 
+import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
 import Table from '../Table'
 import { Modal, ConfirmPopup } from '../Windows'
-import { api, errorHandler, getQueryString, formatNum, keyHandler } from '../Utils'
+import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
@@ -18,7 +18,6 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
     // Create / edit guest type
     const [guestTypeIndex, setGuestTypeIndex] = useState('')
     const [name, setName] = useState('')
-    const [roomPrice, setRoomPrice] = useState('')
     const [makeGuestTypeMdlHeading, setMakeGuestTypeMdlHeading] = useState('')
     const [makeGuestTypeMdlShown, setMakeGuestTypeMdlShown] = useState(false)
     /* Delete guest type */
@@ -60,7 +59,6 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
     const createGuestType = useCallback(() => {
         setGuestTypeIndex('')
         setName('')
-        setRoomPrice('')
         setMakeGuestTypeMdlHeading('Create Guest Type')
         setMakeGuestTypeMdlShown(true)        
     }, [])
@@ -69,7 +67,7 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
         setDisableBtn(true)
 
         api.post(`/guest-types`, {
-            name: name, roomPrice: roomPrice
+            name: name
         })
         .then(response => {
             setDisableBtn(false)
@@ -85,13 +83,12 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchGuestType, name, roomPrice])
+    }, [dispatchGuestType, name])
 
     const editGuestType = useCallback((index) => {
         const targetGuestType = guestType.guestTypes[index] // Get the guest type
         setGuestTypeIndex(index)
         setName(targetGuestType.name)
-        setRoomPrice(targetGuestType.room_price)
         setMakeGuestTypeMdlHeading('Edit Guest Type')
         setMakeGuestTypeMdlShown(true)
     }, [guestType.guestTypes])
@@ -101,7 +98,7 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
         setDisableBtn(true)
 
         api.put(`/guest-types/${targetGuestType.id}`, {
-            name: name, roomPrice: roomPrice
+            name: name
         })
         .then(response => {
             setDisableBtn(false)
@@ -120,7 +117,7 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchGuestType, name, roomPrice, guestType.guestTypes, guestTypeIndex])
+    }, [dispatchGuestType, name, guestType.guestTypes, guestTypeIndex])
 
     const confirmDeleteGuestType = useCallback(index => {
         setGuestTypeIndex(index)
@@ -231,18 +228,9 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                             e, 'Enter', (guestTypeIndex === '' ? storeGuestType : updateGuestType)
                         )}                          
                     }}
-                />,
-                <TextInput label={'Room price'}
-                    formAttr={{
-                        value: formatNum(roomPrice), 
-                        onChange: (e) => {setRoomPrice(formatNum(e.target.value, true))},
-                        onKeyUp: (e) => {keyHandler(
-                            e, 'Enter', (guestTypeIndex === '' ? storeGuestType : updateGuestType)
-                        )}                          
-                    }}
-                />,                    
+                />,                   
             ]}/>}
-            footer={<Button text={'Update'} attr={{
+            footer={<Button text={'Save changes'} attr={{
                 disabled: disableBtn, onClick: () => {
                     // When creating guest type
                     if(guestTypeIndex === ''){ storeGuestType() }
@@ -283,10 +271,9 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
 
 const GuestTypesTable = ({guestTypes, editHandler, deleteHandler}) => {
     return <Table
-        headings={['Name', 'Room Price', 'Actions']}
+        headings={['Name', 'Actions']}
         body={guestTypes.map((guestType, index) => ([
             guestType.name, 
-            'Rp. '+(guestType.room_price ? formatNum(guestType.room_price) : 0),
             <>
                 <Button size={'sm'} type={'light'} text={'Edit'} attr={{
                     onClick: () => {editHandler(index)}

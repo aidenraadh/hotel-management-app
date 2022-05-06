@@ -26,7 +26,6 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     hotel_id: DataTypes.BIGINT,
     room_type_id: DataTypes.BIGINT,
-    pricing_type_id: DataTypes.SMALLINT,
   }, {
     sequelize,
     modelName: 'Room',

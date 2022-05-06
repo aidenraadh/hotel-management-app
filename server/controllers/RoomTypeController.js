@@ -21,6 +21,7 @@ exports.index = async (req, res) => {
             if(error === undefined){ filters.where.name = value }
         }
         const roomTypes = await RoomType.findAll({
+            attributes: ['id', 'name'],
             where: (() => {
                 const where = {...filters.where, hotel_id: req.user.hotel_id}
                 if(where.name){ where.name =  {[Op.iLike]: `%${where.name}%`}}
@@ -41,12 +42,12 @@ exports.index = async (req, res) => {
 
 exports.store = async (req, res) => {
     try {
-        const {values, errMsg} = await validateInput(req, ['name', 'roomPrice'])
+        const {values, errMsg} = await validateInput(req, ['name'])
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
         const roomType = await RoomType.create({
-            name: values.name, room_price: values.roomPrice, hotel_id: req.user.hotel_id,
+            name: values.name, hotel_id: req.user.hotel_id,
         })
         return res.send({
             roomType: roomType,
@@ -64,14 +65,12 @@ exports.update = async (req, res) => {
         if(!roomType){
             return res.status(400).send({message: 'Room type not found'})
         }
-        const {values, errMsg} = await validateInput(req, ['name', 'roomPrice'])
+        const {values, errMsg} = await validateInput(req, ['name'])
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
         roomType.name = values.name
-    
-        roomType.room_price = values.roomPrice
-    
+        
         await roomType.save()    
     
         res.send({
@@ -130,13 +129,6 @@ const validateInput = async (req, inputKeys) => {
                 return value
             }).messages({
                 'string.max': 'The room type name must below 100 characters',
-            }),
-
-            roomPrice: Joi.number().required().integer().min(0).allow(null, '').external(async (value) => {
-                if(value === 0 || value === ''){
-                    return null
-                }
-                return value
             }),
         }
         // Create the schema based on the input key

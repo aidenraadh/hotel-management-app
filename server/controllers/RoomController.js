@@ -21,8 +21,9 @@ exports.index = async (req, res) => {
             const {value, error} = Joi.string().required().trim().validate(req.query.name)
             if(error === undefined){ filters.where.name = value }
         }
+        // Get the rooms
         const rooms = await Room.findAll({
-            attributes: ['id', 'name', 'pricing_type_id'],
+            attributes: ['id', 'name'],
             where: (() => {
                 const where = {...filters.where, hotel_id: req.user.hotel_id}
                 if(where.name){ where.name =  {[Op.iLike]: `%${where.name}%`}}
@@ -36,8 +37,13 @@ exports.index = async (req, res) => {
             order: [['id', 'DESC']],
             ...filters.limitOffset
         })
+        // Get the room types
+        const roomTypesList = await RoomType.findAll({
+            attributes: ['id', 'name']
+        })
         res.send({
             rooms: rooms,
+            roomTypesList: roomTypesList,
             filters: {...filters.where, ...filters.limitOffset}
         })
     } catch(err) {
@@ -49,7 +55,7 @@ exports.index = async (req, res) => {
 exports.store = async (req, res) => {
     try {
         const {values, errMsg} = await validateInput(req, [
-            'name', 'roomTypeId', 'pricingTypeId'
+            'name', 'roomTypeId'
         ])
         if(errMsg){
             return res.status(400).send({message: errMsg})
@@ -57,7 +63,6 @@ exports.store = async (req, res) => {
         const roomType = await GuestType.create({
             name: values.name, 
             room_type_id: values.roomTypeId, 
-            pricing_type_id: values.pricingTypeId, 
             hotel_id: req.user.hotel_id,
         })
         res.send({
@@ -74,17 +79,16 @@ exports.update = async (req, res) => {
     try {
         const room = await getRoom(req.params.id, req.user.hotel_id)
         if(!room){
-            return res.status(400).send({message: 'Guest type not found'})
+            return res.status(400).send({message: 'Room not found'})
         }
         const {values, errMsg} = await validateInput(req, [
-            'name', 'roomTypeId', 'pricingTypeId'
+            'name', 'roomTypeId'
         ])
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
         room.name = values.name
         room.room_type_id = values.roomTypeId
-        room.pricing_type_id = values.pricingTypeId
     
         await room.save()    
     
@@ -102,7 +106,7 @@ exports.destroy = async (req, res) => {
     try {
         const room = await getRoom(req.params.id, req.user.hotel_id)
         if(!room){
-            return res.status(400).send({message: 'Guest type not found'})
+            return res.status(400).send({message: 'Room not found'})
         }
         await room.destroy()
     
@@ -155,15 +159,7 @@ const validateInput = async (req, inputKeys) => {
                     throw {message: "The room type doesn't exist"}
                 }
                 return value
-            }),
-            pricingTypeId: Joi.number().required().integer().external(async (value) => {
-                // Check if the pricing type exists
-                const pricingTypeIds = Object.keys(Room.getPricingTypes()).map(id => parseInt(id))
-                if(!pricingTypeIds.includes(value)){
-                    throw {message: "The room type doesn't exist"}
-                }
-                return value
-            }),            
+            }),          
         }
         // Create the schema based on the input key
         const schema = {}
@@ -188,9 +184,10 @@ const validateInput = async (req, inputKeys) => {
 
 const getRoom = async (id, hotelId) => {
     try {
-        return await Room.findOne({where: {
-            id: id, hotel_id: hotelId
-        }})
+        return await Room.findOne({
+            where: {id: id, hotel_id: hotelId},
+            attributes: ['id', 'name']
+        })
     } catch (error) {
         throw error
     }

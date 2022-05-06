@@ -1,27 +1,27 @@
 import { useCallback, useEffect, useReducer, useState } from 'react'
 
-import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../reducers/GuestTypeReducer'
-import { Button } from '../Buttons'
+import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../reducers/RoomReducer'
 
+import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
 import Table from '../Table'
 import { Modal, ConfirmPopup } from '../Windows'
-import { api, errorHandler, getQueryString, formatNum, keyHandler } from '../Utils'
+import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
-function GuestTypePage({room, dispatchRoom, user}){
+function RoomPage({room, dispatchRoom, user}){
     const [disableBtn , setDisableBtn] = useState(false)
-    // Filter guest types
+    // Filter rooms
     const [filters, dispatchFilters] = useReducer(filterReducer, getFilters())
     const [filterModalShown, setFilterModalShown] = useState(false)
-    // Create / edit guest type
-    const [roomIndex, setGuestTypeIndex] = useState('')
+    // Create / edit room
+    const [roomIndex, setRoomIndex] = useState('')
     const [name, setName] = useState('')
-    const [roomPrice, setRoomPrice] = useState('')
-    const [makeGuestTypeMdlHeading, setMakeGuestTypeMdlHeading] = useState('')
-    const [makeGuestTypeMdlShown, setMakeGuestTypeMdlShown] = useState(false)
-    /* Delete guest type */
+    const [roomTypeId, setRoomTypeId] = useState('')
+    const [makeRoomMdlHeading, setMakeRoomMdlHeading] = useState('')
+    const [makeRoomMdlShown, setMakeRoomMdlShown] = useState(false)
+    /* Delete room */
     const [popupShown, setPopupShown] = useState(false)    
     /* Error Popup */
     const [errPopupShown, setErrPopupShown] = useState(false)
@@ -33,7 +33,7 @@ function GuestTypePage({room, dispatchRoom, user}){
     const getRooms = useCallback((actionType) => {
         // Get the queries
         const queries = {...filters}     
-        // When the guest type is refreshed, set the offset to 0
+        // When the room is refreshed, set the offset to 0
         queries.offset = actionType === ACTIONS.RESET ? 0 : (queries.offset + queries.limit)  
 
         if(room.initialLoad === false){
@@ -42,15 +42,20 @@ function GuestTypePage({room, dispatchRoom, user}){
         api.get(`/rooms${getQueryString(filters)}`)
         .then(response => {
             const responseData = response.data
+            const roomPayload = {
+                rooms: responseData.rooms,
+                filters: responseData.filters                
+            }
+            // When the room is reset, add room types list
+            if(actionType === ACTIONS.RESET){
+                roomPayload.roomTypesList = response.data.roomTypesList
+            }
             setDisableBtn(false)
             setFilterModalShown(false)
             dispatchFilters({type: FILTER_ACTIONS.RESET, payload: {
                 filters: responseData.filters,
             }})
-            dispatchRoom({type: actionType, payload: {
-                rooms: responseData.rooms,
-                filters: responseData.filters
-            }})
+            dispatchRoom({type: actionType, payload: roomPayload})
         })
         .catch(error => {
             errorHandler(error)
@@ -58,96 +63,96 @@ function GuestTypePage({room, dispatchRoom, user}){
     }, [filters, room.initialLoad, dispatchRoom])
 
     const createRoom = useCallback(() => {
-        setGuestTypeIndex('')
+        setRoomIndex('')
         setName('')
-        setRoomPrice('')
-        setMakeGuestTypeMdlHeading('Create Guest Type')
-        setMakeGuestTypeMdlShown(true)        
+        setRoomTypeId('')
+        setMakeRoomMdlHeading('Create Room')
+        setMakeRoomMdlShown(true)        
     }, [])
 
     const storeRoom = useCallback(() => {
-        // setDisableBtn(true)
+        setDisableBtn(true)
 
-        // api.post(`/rooms`, {
-        //     name: name, roomPrice: roomPrice
-        // })
-        // .then(response => {
-        //     setDisableBtn(false)
-        //     setMakeGuestTypeMdlShown(false)                
-        //     dispatchRoom({type: ACTIONS.PREPEND, payload: {
-        //         rooms: response.data.room,
-        //     }})
-        // })
-        // .catch(err => {
-        //     errorHandler(err, {'400': () => {
-        //         setDisableBtn(false)
-        //         setErrPopupShown(true)
-        //         setErrPopupMsg(err.response.data.message)                   
-        //     }})
-        // })
-    }, [dispatchRoom, name, roomPrice])
+        api.post(`/rooms`, {
+            name: name, roomTypeId: roomTypeId
+        })
+        .then(response => {
+            setDisableBtn(false)
+            setMakeRoomMdlShown(false)                
+            dispatchRoom({type: ACTIONS.PREPEND, payload: {
+                rooms: response.data.room,
+            }})
+        })
+        .catch(err => {
+            errorHandler(err, {'400': () => {
+                setDisableBtn(false)
+                setErrPopupShown(true)
+                setErrPopupMsg(err.response.data.message)                   
+            }})
+        })
+    }, [dispatchRoom, name, roomTypeId])
 
     const editRoom = useCallback((index) => {
-        // const targetGuestType = room.rooms[index] // Get the guest type
-        // setGuestTypeIndex(index)
-        // setName(targetGuestType.name)
-        // setRoomPrice(targetGuestType.room_price)
-        // setMakeGuestTypeMdlHeading('Edit Guest Type')
-        // setMakeGuestTypeMdlShown(true)
+        const targetRoom = room.rooms[index] // Get the room
+        setRoomIndex(index)
+        setName(targetRoom.name)
+        setRoomTypeId(targetRoom.room_type_id)
+        setMakeRoomMdlHeading('Edit Room')
+        setMakeRoomMdlShown(true)
     }, [room.rooms])
 
     const updateRoom = useCallback(() => {
-        // const targetGuestType = room.rooms[roomIndex] // Get the guest type
-        // setDisableBtn(true)
+        const targetRoom = room.rooms[roomIndex] // Get the room
+        setDisableBtn(true)
 
-        // api.put(`/guest-types/${targetGuestType.id}`, {
-        //     name: name, roomPrice: roomPrice
-        // })
-        // .then(response => {
-        //     setDisableBtn(false)
-        //     setMakeGuestTypeMdlShown(false)      
-        //     setSuccPopupMsg(response.data.message)
-        //     setSuccPopupShown(true)                         
-        //     dispatchRoom({type: ACTIONS.REPLACE, payload: {
-        //         room: response.data.room,
-        //         index: roomIndex
-        //     }})
-        // })
-        // .catch(err => {
-        //     errorHandler(err, {'400': () => {
-        //         setDisableBtn(false)
-        //         setErrPopupShown(true)
-        //         setErrPopupMsg(err.response.data.message)                   
-        //     }})
-        // })
-    }, [dispatchRoom, name, roomPrice, room.rooms, roomIndex])
+        api.put(`/rooms/${targetRoom.id}`, {
+            name: name, roomTypeId: roomTypeId
+        })
+        .then(response => {
+            setDisableBtn(false)
+            setMakeRoomMdlShown(false)      
+            setSuccPopupMsg(response.data.message)
+            setSuccPopupShown(true)                         
+            dispatchRoom({type: ACTIONS.REPLACE, payload: {
+                room: response.data.room,
+                index: roomIndex
+            }})
+        })
+        .catch(err => {
+            errorHandler(err, {'400': () => {
+                setDisableBtn(false)
+                setErrPopupShown(true)
+                setErrPopupMsg(err.response.data.message)                   
+            }})
+        })
+    }, [dispatchRoom, name, room.rooms, roomIndex])
 
-    const confirmDeleteGuestType = useCallback(index => {
-        // setGuestTypeIndex(index)
-        // setPopupShown(true)
+    const confirmDeleteRoom = useCallback(index => {
+        setRoomIndex(index)
+        setPopupShown(true)
     }, [])    
 
     const deleteRoom = useCallback(() => {
-        // const targetGuestType = room.rooms[roomIndex] // Get the guest type
-        // setDisableBtn(true)
+        const targetRoom = room.rooms[roomIndex] // Get the room
+        setDisableBtn(true)
 
-        // api.delete(`/guest-types/${targetGuestType.id}`)     
-        //     .then(response => {   
-        //         setDisableBtn(false)
-        //         setSuccPopupMsg(response.data.message)
-        //         setSuccPopupShown(true)                     
-        //         dispatchRoom({
-        //             type: ACTIONS.REMOVE, 
-        //             payload: {indexes: roomIndex}
-        //         })                
-        //     })
-        //     .catch(err => {
-        //         errorHandler(err, {'400': () => {
-        //             setDisableBtn(false)
-        //             setErrPopupShown(true)
-        //             setErrPopupMsg(err.response.data.message)                      
-        //         }})               
-        //     })          
+        api.delete(`/rooms/${targetRoom.id}`)     
+            .then(response => {   
+                setDisableBtn(false)
+                setSuccPopupMsg(response.data.message)
+                setSuccPopupShown(true)                     
+                dispatchRoom({
+                    type: ACTIONS.REMOVE, 
+                    payload: {indexes: roomIndex}
+                })                
+            })
+            .catch(err => {
+                errorHandler(err, {'400': () => {
+                    setDisableBtn(false)
+                    setErrPopupShown(true)
+                    setErrPopupMsg(err.response.data.message)                      
+                }})               
+            })          
     }, [dispatchRoom, room.rooms, roomIndex])
 
 
@@ -178,7 +183,7 @@ function GuestTypePage({room, dispatchRoom, user}){
                 <section className='flex-row items-center'>
                     <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
                         formAttr={{
-                            placeholder: 'Search guest types', value: filters.name,
+                            placeholder: 'Search rooms', value: filters.name,
                             onChange: (e) => {dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
                                 key: 'name', value: e.target.value
                             }})},
@@ -194,11 +199,11 @@ function GuestTypePage({room, dispatchRoom, user}){
                 <RoomsTable
                     rooms={room.rooms}
                     editHandler={editRoom}
-                    deleteHandler={confirmDeleteGuestType}
+                    deleteHandler={confirmDeleteRoom}
                 />     
             ]}/>}
         />
-        {/* <Modal
+        <Modal
             size={'sm'} 
             shown={filterModalShown}
             toggleModal={() => {setFilterModalShown(state => !state)}}
@@ -220,33 +225,33 @@ function GuestTypePage({room, dispatchRoom, user}){
         />
         <Modal
             size={'sm'} 
-            shown={makeGuestTypeMdlShown}
-            toggleModal={() => {setMakeGuestTypeMdlShown(state => !state)}}
-            heading={makeGuestTypeMdlHeading}
+            shown={makeRoomMdlShown}
+            toggleModal={() => {setMakeRoomMdlShown(state => !state)}}
+            heading={makeRoomMdlHeading}
             body={<Grid numOfColumns={1} items={[
-                <TextInput label={'Guest type name'}
+                <TextInput label={'Room name'}
                     formAttr={{
                         value: name, onChange: (e) => {setName(e.target.value)},
                         onKeyUp: (e) => {keyHandler(
                             e, 'Enter', (roomIndex === '' ? storeRoom : updateRoom)
                         )}                          
                     }}
-                />,
-                <TextInput label={'Room price'}
+                />,       
+                <Select label={'Room Type'} 
                     formAttr={{
-                        value: formatNum(roomPrice), 
-                        onChange: (e) => {setRoomPrice(formatNum(e.target.value, true))},
-                        onKeyUp: (e) => {keyHandler(
-                            e, 'Enter', (roomIndex === '' ? storeRoom : updateRoom)
-                        )}                          
+                        value: roomTypeId,
+                        onChange: (e) => {setRoomTypeId(e.target.value)}
                     }}
-                />,                    
+                    options={room.roomTypesList.map(roomType => ({
+                        value: roomType.id, text: roomType.name
+                    }))}                        
+                />                             
             ]}/>}
-            footer={<Button text={'Update'} attr={{
+            footer={<Button text={'Save changes'} attr={{
                 disabled: disableBtn, onClick: () => {
-                    // When creating guest type
+                    // When creating room
                     if(roomIndex === ''){ storeRoom() }
-                    // When creating guest type
+                    // When creating room
                     else{ updateRoom() }
                 }
             }}/>}
@@ -254,7 +259,7 @@ function GuestTypePage({room, dispatchRoom, user}){
         <ConfirmPopup
             icon={'warning_1'}
             title={'Warning'}
-            body={'Are you sure want to remove this guest type?'}
+            body={'Are you sure want to remove this room?'}
             confirmText={'Remove'}
             cancelText={'Cancel'}
             shown={popupShown} togglePopup={() => {setPopupShown(state => !state)}} 
@@ -277,17 +282,15 @@ function GuestTypePage({room, dispatchRoom, user}){
             body={popupSuccMsg}
             confirmText={'OK'}
             togglePopup={() => {setSuccPopupShown(state => !state)}} 
-        />          */}
+        />         
     </>
 }
 
 const RoomsTable = ({rooms, editHandler, deleteHandler}) => {
     return <Table
-        headings={['Name', 'Room Type', 'Pricing Type', 'Actions']}
+        headings={['Name', 'Room Type', 'Actions']}
         body={rooms.map((room, index) => ([
-            room.name, 
-            room.roomType.name,
-            'asd',
+            room.name, room.roomType.name,
             <>
                 <Button size={'sm'} type={'light'} text={'Edit'} attr={{
                     onClick: () => {editHandler(index)}
@@ -301,4 +304,4 @@ const RoomsTable = ({rooms, editHandler, deleteHandler}) => {
     />
 }
 
-export default GuestTypePage
+export default RoomPage

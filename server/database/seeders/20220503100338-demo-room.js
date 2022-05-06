@@ -14,7 +14,6 @@ module.exports = {
     const rooms = [
       {
         name: '1', hotel_id: hotel.id, room_type_id: roomType.id,
-        pricing_type_id: 1
       }
     ]
 

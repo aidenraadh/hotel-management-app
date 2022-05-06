@@ -15,11 +15,7 @@ module.exports = {
       hotel_id: {
         type: Sequelize.DataTypes.BIGINT,
         allowNull: false,
-      },                    
-      pricing_type_id: {
-        type: Sequelize.DataTypes.SMALLINT,
-        allowNull: false,
-      },       
+      },                         
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

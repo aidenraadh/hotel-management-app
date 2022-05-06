@@ -12,7 +12,6 @@ module.exports = {
       {
         name: 'Hot towel', 
         hotel_id: hotel.id, 
-        pricing_type_id: 1
       }
     ]
     await RoomService.bulkCreate(roomServices)
