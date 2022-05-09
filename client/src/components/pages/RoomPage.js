@@ -125,7 +125,7 @@ function RoomPage({room, dispatchRoom, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchRoom, name, room.rooms, roomIndex])
+    }, [dispatchRoom, name, room.rooms, roomIndex, roomTypeId])
 
     const confirmDeleteRoom = useCallback(index => {
         setRoomIndex(index)

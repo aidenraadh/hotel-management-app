@@ -210,9 +210,9 @@ SelectAddon.defaultProps = {
 
 export function Checkbox(props){
 	const classes = `multi-choice checkbox ${props.type}` +
-		(props.containerClasses ? ` ${props.containerClasses}` : props.containerClasses)
+		(props.classes ? ` ${props.classes}` : props.classes)
 
-	let formAttr = {...props.formAttr}
+	let formAttr = {...props.formAttr, value: props.value}
 	if(props.formName){
 		formAttr = {...formAttr,
 			id: props.formName, name: props.formName, 
@@ -234,14 +234,14 @@ Checkbox.defaultProps = {
 	type: 'outline', // String - 'outline'|'basic'
 	label: '', // String|JSX
 	value: '', // String
-	containerClasses: '', // String
+	classes: '', // String
 	containerAttr: {}, // Object
 	formAttr: {}, // Object
 }
 
 export function Radio(props){
 	const classes = `multi-choice radio ${props.type}` + 
-		(props.containerClasses ? ` ${props.containerClasses}` : props.containerClasses)
+		(props.classes ? ` ${props.classes}` : props.classes)
 
 	let formAttr = {...props.formAttr}
 	if(props.formName){
@@ -266,7 +266,7 @@ Radio.defaultProps = {
 	type: 'outline', // String - 'outline'|'basic'
 	label: '', // String|JSX
 	value: '', // String
-	containerClasses: '', // String
+	classes: '', // String
 	containerAttr: {}, // Object
 	formAttr: {}, // Object
 }

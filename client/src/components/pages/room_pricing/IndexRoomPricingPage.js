@@ -2,6 +2,8 @@ import { useCallback, useEffect, useReducer, useState } from 'react'
 
 import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../../reducers/RoomPricingReducer'
 
+import {Link} from 'react-router-dom'
+
 import { Button } from '../../Buttons'
 import {PlainCard} from '../../Cards'
 import Table from '../../Table'
@@ -58,7 +60,7 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
     const viewRoomPricing = useCallback(index => {
         setViewedRoomType(roomPricing.roomTypes[index])
         setViewRoomPricingsMdlShown(true)
-    })    
+    }, [roomPricing.roomTypes])    
 
     const confirmDeleteRoomPricing = useCallback(index => {
         setRoomTypeIndex(index)
@@ -106,10 +108,9 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
                     onClick: () => {setFilterModalShown(true)}
                 }}
             />
-            <Button
-                size={'sm'} text={'+ Create'} 
-                attr={{onClick: () => {}}}
-            />            
+            <Link to='/room-pricings/edit'>
+                <Button size={'sm'} text={'+ Create'}/>
+            </Link>           
         </section>    
         <PlainCard
             body={<Grid numOfColumns={1} items={[

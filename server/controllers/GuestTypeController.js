@@ -8,6 +8,14 @@ const logger     = require('../utils/logger')
 
 exports.index = async (req, res) => {    
     try {
+        // Get only the room type and its specific columns
+        if(req.query.get){
+            const guestTypes = await GuestType.findAll({
+                where: {hotel_id: req.user.hotel_id},
+                attributes: req.query.get.split(',')
+            })
+            return res.send({guestTypes: guestTypes})
+        }          
         // Set filters
         const filters = {
             where: {},

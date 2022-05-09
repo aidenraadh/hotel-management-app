@@ -19,6 +19,7 @@ import GuestTypePage from './components/pages/GuestTypePage'
 import RoomPage from './components/pages/RoomPage'
 import RoomServicePage from './components/pages/RoomServicePage'
 import IndexRoomPricingPage from './components/pages/room_pricing/IndexRoomPricingPage'
+import CrtEdtRoomPricingPage from './components/pages/room_pricing/CrtEdtRoomPricingPage'
 import ProfilePage from './components/pages/ProfilePage'
 
 function App(){
@@ -97,7 +98,10 @@ function App(){
                         }}/>        
                         <ProtectedRoute path={'/room-pricings'} exact component={IndexRoomPricingPage} props={{
                             user: user, roomPricing: roomPricing, dispatchRoomPricing: dispatchRoomPricing
-                        }}/>                                          
+                        }}/>          
+                        <ProtectedRoute path={'/room-pricings/edit'} exact component={CrtEdtRoomPricingPage} props={{
+                            user: user,
+                        }}/>                                                         
                     </Switch>                    
                 </div>     
             </Router>
