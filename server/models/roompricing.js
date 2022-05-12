@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
       models.RoomPricing.belongsTo(
         models.GuestType, {foreignKey: 'guest_type_id', as: 'guestType'}
       )   
+      models.RoomPricing.belongsTo(
+        models.GuestType, {foreignKey: 'room_type_id', as: 'roomType'}
+      )         
     }
   };
   RoomPricing.init({

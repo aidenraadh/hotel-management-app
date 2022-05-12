@@ -195,18 +195,18 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
 
 const RoomPricingsTable = ({roomTypes, viewHandler, deleteHandler}) => {
     return <Table
-        headings={['Room Type', 'Actions']}
+        headings={['Room Type', <span className='text-right block'>Actions</span>]}
         body={roomTypes.map((roomType, index) => ([
             roomType.name, 
-            <>
-                <Button size={'sm'} type={'light'} text={'View pricing'} attr={{
+            <span className='flex-row items-center content-end'>
+                <Button size={'sm'} type={'light'} text={'View'} attr={{
                     onClick: () => {viewHandler(index)}
                 }}/>
                 <Button size={'sm'} type={'light'} color={'red'} text={'Delete'} attr={{
                     style: {marginLeft: '1rem'},
                     onClick: () => {deleteHandler(index)}
                 }}/>                
-            </>
+            </span>
         ]))}
     />
 }
@@ -215,44 +215,31 @@ const RoomPricingsDetail = ({roomType}) => {
     if(!roomType){
         return ''
     }
+    const guestTypeStyles = {
+        fontSize: '1.46rem',
+        backgroundColor: '#E1F0FF', 
+        borderRadius: '0.55rem', 
+        padding: '1rem', 
+        margin: '2rem 0 1rem'
+    }
     const dayNames = [
         'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
         'saturday', 'sunday'
     ]
     return <Grid numOfColumns={1} items={roomType.roomPricings.map((roomPricing, roomPricingIdx) => {
-
-        let priceAndDays = {}
-        dayNames.forEach(day => {
-            const price = roomPricing[`price_on_${day}`].toString()
-            if(priceAndDays[price]){
-                priceAndDays[price].push(day)
-            }
-            else{
-                priceAndDays[price] = [day]
-            }
-        })
-        const Pricings = Object.keys(priceAndDays).map((price, index) => (
-            <div key={index}>
-                <div className='flex-row items-center content-space-between'>
-                    <span>Price:</span>
-                    <span className='text-capitalize'>{'Rp. '+formatNum(price)}</span>
-                </div>
-                <ul className='text-capitalize flex-row wrap items-center'>
-                    {priceAndDays[price].map(day => (
-                        <li style={{width: '33%'}}>{day}</li>
-                    ))}
-                </ul>
-            </div>
-        ))
-        return (
-            <div key={roomPricingIdx}>
-                <div className='flex-row items-center content-space-between'>
-                    <span>Guest type:</span>
-                    <span className='text-capitalize'>{roomPricing.guestType.name}</span>
-                </div>     
-                {Pricings}           
-            </div>
-        )
+        return (<>
+            <section key={roomPricingIdx}>
+                <div className='text-blue text-medium' style={guestTypeStyles}>
+                    Guest type: <span className='text-capitalize'>{roomPricing.guestType.name}</span>                 
+                </div>           
+                <Grid numOfColumns={2} items={dayNames.map((day, dayIndex) => (
+                    <p className='flex-row content-space-between text-capitalize' key={dayIndex} style={{fontSize: '1.36rem'}}>
+                        <span>{day}</span>
+                        <span>Rp. {formatNum(roomPricing[`price_on_${day}`])}</span>
+                    </p>                    
+                ))}/>                       
+            </section>           
+        </>)
     })}
     />
 }

@@ -23,26 +23,43 @@ const roomPricingReducer = (state, action) => {
 
     switch(type){
         // Append room type(s) to 'roomTypes'
-        case ACTIONS.APPEND: 
-            return {
-                ...state, roomTypes: (
-                    Array.isArray(payload.roomTypes) ? 
-                    [...state.roomTypes, ...payload.roomTypes] : 
-                    [...state.roomTypes, payload.roomTypes]
-                ),
-                canLoadMore: payload.roomTypes.length < payload.filters.limit ? false : true,
+        case ACTIONS.APPEND: return (() => {
+            let addedRoomTypes;
+            // Make sure the room type(s) has room pricings
+            if(Array.isArray(payload.roomTypes)){
+                addedRoomTypes = payload.roomTypes.filter(roomType => (
+                    roomType.roomPricings.length !== 0
+                ))  
+            }
+            else{
+                addedRoomTypes = payload.roomTypes.roomPricings ? [payload.roomTypes] : []  
+            }          
+            const totalRoomTypes = [...state.roomTypes, ...addedRoomTypes]
+            return {...state, 
+                roomTypes: totalRoomTypes,
+                canLoadMore: totalRoomTypes.length < payload.filters.limit ? false : true,
                 initialLoad: true
-            }; 
+            }            
+        })()
         // Prepend array of room pricings(s) to 'roomTypes'
-        case ACTIONS.PREPEND: 
-            return {
-                ...state, roomTypes: (
-                    Array.isArray(payload.roomTypes) ? 
-                    [...payload.roomTypes, ...state.roomTypes] : 
-                    [payload.roomTypes, ...state.roomTypes]                
-                ),
-
-            };
+        case ACTIONS.PREPEND: return (() => {
+            let addedRoomTypes;
+            // Make sure the room type(s) has room pricings
+            if(Array.isArray(payload.roomTypes)){
+                addedRoomTypes = payload.roomTypes.filter(roomType => (
+                    roomType.roomPricings.length !== 0
+                ))  
+            }
+            else{
+                addedRoomTypes = payload.roomTypes.roomPricings ? [payload.roomTypes] : []  
+            }          
+            const totalRoomTypes = [addedRoomTypes, ...state.roomTypes]
+            return {...state, 
+                roomTypes: totalRoomTypes,
+                canLoadMore: totalRoomTypes.length < payload.filters.limit ? false : true,
+                initialLoad: true
+            }              
+        })()
         // Replace a room type inside 'roomTypes'
         case ACTIONS.REPLACE: 
             return {
@@ -67,12 +84,16 @@ const roomPricingReducer = (state, action) => {
                 })()
             }; 
         // Reset room type(s) from 'roomTypes'
-        case ACTIONS.RESET: 
-            return {
-                ...state, roomTypes: [...payload.roomTypes],
-                canLoadMore: payload.roomTypes.length < payload.filters.limit ? false : true,
+        case ACTIONS.RESET: return (() => {
+            const roomTypes = payload.roomTypes.filter(roomType => (
+                roomType.roomPricings.length !== 0
+            ))
+            return {...state, 
+                roomTypes: roomTypes,
+                canLoadMore: roomTypes.length < payload.filters.limit ? false : true,
                 initialLoad: true
-            };             
+            }
+        })()          
         // Error
         default: throw new Error()
     }

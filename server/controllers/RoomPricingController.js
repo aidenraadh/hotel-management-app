@@ -2,7 +2,6 @@ const model      = require('../models/index')
 const RoomPricing   = model.RoomPricing
 const RoomType   = model.RoomType
 const GuestType   = model.GuestType
-const Sequelize  = require("sequelize")
 const {Op}       = require("sequelize")
 const Joi        = require('joi')
 const filterKeys = require('../utils/filterKeys')
@@ -32,11 +31,11 @@ exports.index = async (req, res) => {
             include: [
                 {
                     model: RoomPricing, as: 'roomPricings',
-                    attributes: {exclude: ['room_type_id', 'guest_type_id']},
+                    attributes: {exclude: ['room_type_id', 'guest_type_id', 'created_at', 'updated_at']},
                     include: [
+                        // Get guest type, make sure the guest type and for the hotel exists
                         {
-                            model: GuestType, as: 'guestType',
-                            attributes: ['id', 'name']
+                            model: GuestType, as: 'guestType', attributes: ['id', 'name'],
                         }
                     ]
                 }
@@ -56,16 +55,23 @@ exports.index = async (req, res) => {
 
 exports.store = async (req, res) => {
     try {
-        const {values, errMsg} = await validateInput(req, ['name'])
+        const {values, errMsg} = await validateInput(req, ['storeRoomTypeId', 'storeRoomPricings'])
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
-        const roomType = await RoomType.create({
-            name: values.name, hotel_id: req.user.hotel_id,
-        })
+        await RoomPricing.bulkCreate(values.storeRoomPricings.map(roomPricing => ({
+            room_type_id: values.storeRoomTypeId,
+            guest_type_id: roomPricing.guestTypeId,
+            price_on_monday: roomPricing.priceOnMonday,
+            price_on_tuesday: roomPricing.priceOnTuesday,
+            price_on_wednesday: roomPricing.priceOnWednesday,
+            price_on_thursday: roomPricing.priceOnThursday,
+            price_on_friday: roomPricing.priceOnFriday,
+            price_on_saturday: roomPricing.priceOnSaturday,
+            price_on_sunday: roomPricing.priceOnSunday,
+        })))
         return res.send({
-            roomType: roomType,
-            message: 'Room type successfully created'
+            message: 'Room pricings successfully created'
         })        
     } catch (err) {
         logger.error(err, {errorObj: err})
@@ -75,21 +81,28 @@ exports.store = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
-        const roomType = await getRoomType(req.params.id, req.user.hotel_id)
-        if(!roomType){
-            return res.status(400).send({message: 'Room type not found'})
-        }
-        const {values, errMsg} = await validateInput(req, ['name'])
+        const {values, errMsg} = await validateInput(req, ['updateRoomPricings'])
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
-        roomType.name = values.name
-        
-        await roomType.save()    
-    
+        for (const roomPricing of values.updateRoomPricings) {
+            await RoomPricing.update(
+                {
+                    price_on_monday: roomPricing.priceOnMonday,
+                    price_on_tuesday: roomPricing.priceOnTuesday,
+                    price_on_wednesday: roomPricing.priceOnWednesday,
+                    price_on_thursday: roomPricing.priceOnThursday,
+                    price_on_friday: roomPricing.priceOnFriday,
+                    price_on_saturday: roomPricing.priceOnSaturday,
+                    price_on_sunday: roomPricing.priceOnSunday,
+                },
+                {
+                    where: {id: roomPricing.id}
+                }
+            )            
+        }
         res.send({
-            roomType: roomType,
-            message: 'Room type successfully updated'
+            message: 'Room pricings successfully updated'
         })          
     } catch (err) {
         logger.error(err, {errorObj: err})
@@ -99,14 +112,20 @@ exports.update = async (req, res) => {
 
 exports.destroy = async (req, res) => {
     try {
-        const roomType = await getRoomType(req.params.id, req.user.hotel_id)
+        const roomType = await RoomType.findOne({
+            attributes: ['id'],
+            where: {id: req.params.id, hotel_id: req.user.hotel_id}
+        })
         if(!roomType){
-            return res.status(400).send({message: 'Room type not found'})
+            return res.status(400).send({
+                message: 'Room pricings for this room type is not exist'
+            })             
         }
-        await roomType.destroy()
-        
+        await RoomPricing.destroy({
+            where: {room_type_id: req.params.roomTypeId}
+        })
         res.send({
-            message: 'Room type successfully deleted'
+            message: 'Room pricings successfully deleted'
         })            
     } catch (err) {
         logger.error(err, {errorObj: err})
@@ -124,26 +143,131 @@ exports.destroy = async (req, res) => {
 const validateInput = async (req, inputKeys) => {
     try {
         const input = filterKeys(req.body, inputKeys)
-        const rules = {
-            // Make sure the room type name is unique by hotel
-            name: Joi.string().required().trim().max(100).external(async (value, helpers) => {
-                const filters = [
-                    Sequelize.where(Sequelize.fn('lower', Sequelize.col('name')), Sequelize.fn('lower', value)),
-                    {hotel_id: req.user.hotel_id}                    
-                ]
-                // When the room type is updated
-                if(req.params.id){
-                    filters.push({[Op.not]: [{id: req.params.id}]})                    
-                }
-                const roomType = await RoomType.findOne({where: filters, attributes: ['id']})
+        if(input['storeRoomPricings']){
 
-                if(roomType){
-                    throw {message: 'The room type name already taken'}
-                }
+        }
+        if(input['updateRoomPricings']){
+            
+        }        
+        const rules = {
+            // For storing
+            storeRoomTypeId: Joi.number().required().integer().external(async (value, helpers) => {
+                // Make sure the room type name is exists by hotel
+                const roomType = await RoomType.findOne({
+                    attributes: ['id'],
+                    where: {id: value, hotel_id: req.user.hotel_id}
+                })
+                if(!roomType){
+                    throw {message: 'The room type is not exist'}
+                }                
+                // Make sure room pricings is not exists for this room type
+                const roomPricings = await RoomPricing.findOne({
+                    attributes: ['id'],
+                    where: {room_type_id: value}
+                })
+                if(roomPricings){
+                    throw {message: 'Room pricings with this room type already exists'}
+                }                   
                 return value
-            }).messages({
-                'string.max': 'The room type name must below 100 characters',
             }),
+            // For storing
+            storeRoomPricings: Joi.array().required().items(Joi.object({
+                guestTypeId: Joi.number().required().integer(),
+                priceOnMonday: Joi.number().required().integer().allow('', null),
+                priceOnTuesday: Joi.number().required().integer().allow('', null),
+                priceOnWednesday: Joi.number().required().integer().allow('', null),
+                priceOnThursday: Joi.number().required().integer().allow('', null),
+                priceOnFriday: Joi.number().required().integer().allow('', null),
+                priceOnSaturday: Joi.number().required().integer().allow('', null),
+                priceOnSunday: Joi.number().required().integer().allow('', null),
+            }).unknown(true)).external(async (value, helpers) => {
+                console.log('haha')
+                const guestTypeIds = value.map(roomPricing => (
+                    roomPricing.guestTypeId
+                ))
+                if(guestTypeIds.length === 0){
+                    throw {message: "Please add the guest type"}
+                }
+                const guestTypes = await GuestType.findAll({
+                    attributes: ['id'],
+                    where: {id: guestTypeIds, hotel_id: req.user.hotel_id},
+                })
+                // Make sure all guest types exists by hotel
+                if(guestTypeIds.length !== guestTypes.length){
+                    throw {message: "One of the guest type doesn't exist"}
+                }
+                const notPriceOnDayKeys = ['guestTypeId']
+                // If the price is empty string, set it to null
+                value.forEach((roomPricing, index) => {
+                    for(const key in roomPricing){
+                        if(!notPriceOnDayKeys.includes(key)){
+                            if(roomPricing[key] === ''){ value[index][key] = null }
+                        }
+                    }
+                })
+                return value
+            }),            
+            // For updating
+            updateRoomPricings: Joi.array().required().items(Joi.object({
+                id: Joi.number().required().integer(),
+                isEdited: Joi.boolean().required(),
+                guestTypeId: Joi.number().required().integer(),
+                priceOnMonday: Joi.number().required().integer().allow('', null),
+                priceOnTuesday: Joi.number().required().integer().allow('', null),
+                priceOnWednesday: Joi.number().required().integer().allow('', null),
+                priceOnThursday: Joi.number().required().integer().allow('', null),
+                priceOnFriday: Joi.number().required().integer().allow('', null),
+                priceOnSaturday: Joi.number().required().integer().allow('', null),
+                priceOnSunday: Joi.number().required().integer().allow('', null),
+            }).unknown(true)).external(async (value, helpers) => {
+                // Get all room pricing IDs
+                const roomPricingIds = value.map(roomPricing => (
+                    roomPricing.id
+                ))
+                const roomPricings = await RoomPricing.findAll({
+                    attributes: ['id'],
+                    where: {
+                        id: roomPricingIds, hotel_id: req.user.hotel_id
+                    },
+                    include: [
+                        // Get room type, make sure the room type and for the hotel exists
+                        {
+                            model: RoomType, as: 'roomType', attributes: ['id'],
+                            where: {hotel_id: req.user.hotel_id}
+                        },
+                        // Get guest type, make sure the guest type and for the hotel exists
+                        {
+                            model: GuestType, as: 'guestType', attributes: ['id'],
+                            where: {hotel_id: req.user.hotel_id}
+                        }                    
+                    ]
+                })
+                const sanitizedRoomPricings = values.filter(item => {
+                    // Make sure the room pricing is edited
+                    if(item.isEdited === false){
+                        return false
+                    }
+                    const roomPricing = roomPricings.find(roomPricing => (
+                        parseInt(roomPricing.id) === item.id
+                    ))
+                    // Make sure the room pricing exists
+                    if(!roomPricing){
+                        return false
+                    }
+                    // Make sure the room type and the guest type exist
+                    return roomPricing.roomType && roomPricing.guestType
+                })
+                const notPriceOnDayKeys = ['guestTypeId', 'id']
+                // If the price is empty string, set it to null
+                sanitizedRoomPricings.forEach((roomPricing, index) => {
+                    for(const key in roomPricing){
+                        if(!notPriceOnDayKeys.includes(key)){
+                            if(roomPricing[key] === ''){ value[index][key] = null }
+                        }
+                    }
+                })                
+                return sanitizedRoomPricings
+            }),             
         }
         // Create the schema based on the input key
         const schema = {}
@@ -156,22 +280,5 @@ const validateInput = async (req, inputKeys) => {
         return {values: values}
     } catch (err) {
         return {errMsg: err.message}
-    }
-}
-
-/**
- * 
- * @param {integer} id 
- * @param {integer} hotelId 
- * @returns object
- */
-
-const getRoomType = async (id, hotelId) => {
-    try {
-        return await RoomType.findOne({where: {
-            id: id, hotel_id: hotelId
-        }})
-    } catch (error) {
-        throw error
     }
 }

@@ -39,5 +39,8 @@ rootRouter
 
 rootRouter
     .get('/room-pricings', [isAuth, RoomPricingController.index])  
+    .post('/room-pricings', [isAuth, RoomPricingController.store])  
+    .put('/room-pricings/:roomTypeId', [isAuth, RoomPricingController.update])  
+    .delete('/room-pricings/:roomTypeId', [isAuth, RoomPricingController.destroy])  
     
 module.exports = rootRouter
