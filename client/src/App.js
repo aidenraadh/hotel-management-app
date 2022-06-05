@@ -2,8 +2,6 @@ import React, { useReducer, useState } from "react";
 import ErrorBoundary from './components/ErrorBoundary'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
 
-import roomTypeReducer, {INIT_STATE as ROOM_TYPE_INIT_STATE} from "./reducers/RoomTypeReducer";
-import guestTypeReducer, {INIT_STATE as GUEST_TYPE_INIT_STATE} from "./reducers/GuestTypeReducer";
 import roomReducer, {INIT_STATE as ROOM_INIT_STATE} from "./reducers/RoomReducer";
 import roomPricingReducer, {INIT_STATE as ROOM_PRICING_INIT_STATE} from "./reducers/RoomPricingReducer";
 
@@ -24,8 +22,6 @@ import ProfilePage from './components/pages/ProfilePage'
 
 function App(){
     const [sidebarShown, setSidebarShown] = useState(false)
-    const [roomType, dispatchRoomType] = useReducer(roomTypeReducer, ROOM_TYPE_INIT_STATE)   
-    const [guestType, dispatchGuestType] = useReducer(guestTypeReducer, GUEST_TYPE_INIT_STATE) 
     const [room, dispatchRoom] = useReducer(roomReducer, ROOM_INIT_STATE)    
     const [roomPricing, dispatchRoomPricing] = useReducer(roomPricingReducer, ROOM_PRICING_INIT_STATE)  
     const user = getUser()
@@ -85,10 +81,10 @@ function App(){
                             user: user
                         }}/>                         
                         <ProtectedRoute path={'/room-types'} exact component={RoomTypePage} props={{
-                            user: user, roomType: roomType, dispatchRoomType: dispatchRoomType
+                            user: user
                         }}/>         
                         <ProtectedRoute path={'/guest-types'} exact component={GuestTypePage} props={{
-                            user: user, guestType: guestType, dispatchGuestType: dispatchGuestType
+                            user: user,
                         }}/>                                          
                         <ProtectedRoute path={'/rooms'} exact component={RoomPage} props={{
                             user: user, room: room, dispatchRoom: dispatchRoom

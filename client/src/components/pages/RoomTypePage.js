@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useReducer, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import {useDispatch, useSelector} from 'react-redux'
 
-import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../reducers/RoomTypeReducer'
+import {append, prepend, replace, remove, updateFilters, syncFilters, reset} from '../../features/roomTypeSlice'
 
 import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
@@ -10,10 +11,12 @@ import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
-function RoomTypePage({roomType, dispatchRoomType, user}){
+function RoomTypePage({user}){
+    const roomType = useSelector(state => state.roomType)
+    const dispatch = useDispatch()
+
     const [disableBtn , setDisableBtn] = useState(false)
     // Filter room types
-    const [filters, dispatchFilters] = useReducer(filterReducer, getFilters())
     const [filterModalShown, setFilterModalShown] = useState(false)
     // Create / edit room type
     const [roomTypeIndex, setRoomTypeIndex] = useState('')
@@ -29,32 +32,33 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
     const [succPopupShown, setSuccPopupShown] = useState(false)
     const [popupSuccMsg, setSuccPopupMsg] = useState('')    
 
-    const getRoomTypes = useCallback((actionType) => {
-        // Get the queries
-        const queries = {...filters}     
-        // When the room type is refreshed, set the offset to 0
-        queries.offset = actionType === ACTIONS.RESET ? 0 : (queries.offset + queries.limit)  
-
-        if(roomType.initialLoad === false){
-            setDisableBtn(true)
-        }                  
-        api.get(`/room-types${getQueryString(filters)}`)
+    const getRoomTypes = useCallback(actionType => {
+        let queries = {}
+        // When the state is reset, set the offset to 0
+        if(actionType === reset){
+            queries = {...roomType.filters}
+            queries.offset = 0
+        }
+        // When the state is loaded more, increase the offset by the limit
+        else if(actionType === append){
+            queries = {...roomType.lastFilters}
+            queries.offset += queries.limit 
+        }
+        setDisableBtn(true)                
+        api.get(`/room-types${getQueryString(queries)}`)
         .then(response => {
             const responseData = response.data
             setDisableBtn(false)
             setFilterModalShown(false)
-            dispatchFilters({type: FILTER_ACTIONS.RESET, payload: {
-                filters: responseData.filters,
-            }})
-            dispatchRoomType({type: actionType, payload: {
+            dispatch(actionType({
                 roomTypes: responseData.roomTypes,
                 filters: responseData.filters
-            }})
+            }))
         })
         .catch(error => {
             errorHandler(error)
         })
-    }, [filters, roomType.initialLoad, dispatchRoomType])
+    }, [roomType, dispatch])
 
     const createRoomType = useCallback(() => {
         setRoomTypeIndex('')
@@ -71,10 +75,10 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
         })
         .then(response => {
             setDisableBtn(false)
-            setMakeRoomTypeMdlShown(false)                
-            dispatchRoomType({type: ACTIONS.PREPEND, payload: {
-                roomTypes: response.data.roomType,
-            }})
+            setMakeRoomTypeMdlShown(false)             
+            dispatch(prepend({
+                roomTypes: response.data.roomType,                
+            }))               
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
@@ -83,7 +87,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchRoomType, name])
+    }, [dispatch, name])
 
     const editRoomType = useCallback((index) => {
         const targetRoomType = roomType.roomTypes[index] // Get the room type
@@ -105,10 +109,10 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
             setMakeRoomTypeMdlShown(false)      
             setSuccPopupMsg(response.data.message)
             setSuccPopupShown(true)                         
-            dispatchRoomType({type: ACTIONS.REPLACE, payload: {
+            dispatch(replace({
                 roomType: response.data.roomType,
-                index: roomTypeIndex
-            }})
+                index: roomTypeIndex                
+            }))
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
@@ -117,7 +121,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchRoomType, name, roomType.roomTypes, roomTypeIndex])
+    }, [dispatch, name, roomType.roomTypes, roomTypeIndex])
 
     const confirmDeleteRoomType = useCallback(index => {
         setRoomTypeIndex(index)
@@ -133,10 +137,7 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                 setDisableBtn(false)
                 setSuccPopupMsg(response.data.message)
                 setSuccPopupShown(true)                     
-                dispatchRoomType({
-                    type: ACTIONS.REMOVE, 
-                    payload: {indexes: roomTypeIndex}
-                })                
+                dispatch(remove( {indexes: roomTypeIndex} ))                
             })
             .catch(err => {
                 errorHandler(err, {'400': () => {
@@ -145,16 +146,26 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                     setErrPopupMsg(err.response.data.message)                      
                 }})               
             })          
-    }, [dispatchRoomType, roomType.roomTypes, roomTypeIndex])
+    }, [dispatch, roomType.roomTypes, roomTypeIndex])
 
 
     useEffect(() => {       
-        if(roomType.initialLoad === false){
-            getRoomTypes(ACTIONS.RESET)
+        if(roomType.isLoaded === false){
+            getRoomTypes(reset)
         }
-    }, [roomType.initialLoad, getRoomTypes])
+    }, [roomType.isLoaded, getRoomTypes])
+
+    // When the page is rendered and roomType is already loaded,
+    // set the
+    useEffect(() => {
+        return () => {
+            // Make sure sync 'filters' and 'lastFilters' before leaving this page
+            // so when user enter this page again, the 'filters' is the same as 'lastFilters'
+            dispatch(syncFilters())
+        }
+    }, [dispatch]) 
     
-    if(roomType.initialLoad === false){
+    if(roomType.isLoaded === false){
         return 'Loading ...'
     }
     return <>
@@ -175,24 +186,29 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
                 <section className='flex-row items-center'>
                     <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
                         formAttr={{
-                            placeholder: 'Search room types', value: filters.name,
-                            onChange: (e) => {dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'name', value: e.target.value
-                            }})},
-                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRoomTypes(ACTIONS.RESET)})}                              
+                            placeholder: 'Search room types', value: roomType.filters.name,
+                            onChange: (e) => {dispatch(updateFilters([
+                                {key: 'name', value: e.target.value}
+                            ]))},
+                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRoomTypes(reset)})}                              
                         }}
                     />
                     <Button text={'Search'} iconName={'search'} iconOnly={'true'} attr={{
                         style: {flexShrink: 0},
                         disabled: disableBtn,
-                        onClick: () => {getRoomTypes(ACTIONS.RESET)}
+                        onClick: () => {getRoomTypes(reset)}
                     }}/>      
                 </section>,
                 <RoomTypesTable
                     roomTypes={roomType.roomTypes}
                     editHandler={editRoomType}
                     deleteHandler={confirmDeleteRoomType}
-                />     
+                />,
+                roomType.canLoadMore ? 
+                <button type="button" className='text-blue block' style={{fontSize: '1.46rem', margin: '0 auto'}} 
+                onClick={() => {getRoomTypes(append)}} disabled={disableBtn}>
+                    Load More
+                </button> : ''               
             ]}/>}
         />
         <Modal
@@ -202,17 +218,15 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
             heading={'Filter Room Type'}
             body={<>
                 <Grid numOfColumns={1} items={[
-                    <Select label={'Rows shown'} formAttr={{value: filters.limit, onChange: (e) => {
-                            dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'limit', value: e.target.value
-                            }})
+                    <Select label={'Rows shown'} formAttr={{value: roomType.filters.limit, onChange: (e) => {
+                            dispatch(updateFilters( [{key: 'limit', value: e.target.value}] ))
                         }}}
                         options={[{value: 10}, {value: 20}, {value: 30}]}                        
                     />
                 ]}/>
             </>}
             footer={<Button text={'Filter'} attr={{
-                disabled: disableBtn, onClick: () => {getRoomTypes(ACTIONS.RESET)}
+                disabled: disableBtn, onClick: () => {getRoomTypes(reset)}
             }}/>}
         />
         <Modal
@@ -271,8 +285,9 @@ function RoomTypePage({roomType, dispatchRoomType, user}){
 
 const RoomTypesTable = ({roomTypes, editHandler, deleteHandler}) => {
     return <Table
-        headings={['Name', 'Actions']}
+        headings={['No.', 'Name', 'Actions']}
         body={roomTypes.map((roomType, index) => ([
+            (index + 1),
             roomType.name, 
             <>
                 <Button size={'sm'} type={'light'} text={'Edit'} attr={{

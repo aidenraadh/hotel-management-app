@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useReducer, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import {useDispatch, useSelector} from 'react-redux'
 
-import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../reducers/GuestTypeReducer'
+import {append, prepend, replace, remove, updateFilters, syncFilters, reset} from '../../features/guestTypeSlice'
 
 import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
@@ -10,10 +11,12 @@ import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
-function GuestTypePage({guestType, dispatchGuestType, user}){
+function GuestTypePage({user}){
+    const guestType = useSelector(state => state.guestType)
+    const dispatch = useDispatch()
+
     const [disableBtn , setDisableBtn] = useState(false)
     // Filter guest types
-    const [filters, dispatchFilters] = useReducer(filterReducer, getFilters())
     const [filterModalShown, setFilterModalShown] = useState(false)
     // Create / edit guest type
     const [guestTypeIndex, setGuestTypeIndex] = useState('')
@@ -29,32 +32,33 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
     const [succPopupShown, setSuccPopupShown] = useState(false)
     const [popupSuccMsg, setSuccPopupMsg] = useState('')    
 
-    const getGuestTypes = useCallback((actionType) => {
-        // Get the queries
-        const queries = {...filters}     
-        // When the guest type is refreshed, set the offset to 0
-        queries.offset = actionType === ACTIONS.RESET ? 0 : (queries.offset + queries.limit)  
-
-        if(guestType.initialLoad === false){
-            setDisableBtn(true)
-        }                  
-        api.get(`/guest-types${getQueryString(filters)}`)
+    const getGuestTypes = useCallback(actionType => {
+        let queries = {}
+        // When the state is reset, set the offset to 0
+        if(actionType === reset){
+            queries = {...guestType.filters}
+            queries.offset = 0
+        }
+        // When the state is loaded more, increase the offset by the limit
+        else if(actionType === append){
+            queries = {...guestType.lastFilters}
+            queries.offset += queries.limit 
+        }
+        setDisableBtn(true)
+        api.get(`/guest-types${getQueryString(queries)}`)
         .then(response => {
             const responseData = response.data
             setDisableBtn(false)
             setFilterModalShown(false)
-            dispatchFilters({type: FILTER_ACTIONS.RESET, payload: {
-                filters: responseData.filters,
-            }})
-            dispatchGuestType({type: actionType, payload: {
+            dispatch(actionType({
                 guestTypes: responseData.guestTypes,
                 filters: responseData.filters
-            }})
+            }))
         })
         .catch(error => {
             errorHandler(error)
         })
-    }, [filters, guestType.initialLoad, dispatchGuestType])
+    }, [guestType, dispatch])
 
     const createGuestType = useCallback(() => {
         setGuestTypeIndex('')
@@ -72,9 +76,9 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
         .then(response => {
             setDisableBtn(false)
             setMakeGuestTypeMdlShown(false)                
-            dispatchGuestType({type: ACTIONS.PREPEND, payload: {
+            dispatch(prepend({
                 guestTypes: response.data.guestType,
-            }})
+            }))  
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
@@ -83,7 +87,7 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchGuestType, name])
+    }, [dispatch, name])
 
     const editGuestType = useCallback((index) => {
         const targetGuestType = guestType.guestTypes[index] // Get the guest type
@@ -105,10 +109,10 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
             setMakeGuestTypeMdlShown(false)      
             setSuccPopupMsg(response.data.message)
             setSuccPopupShown(true)                         
-            dispatchGuestType({type: ACTIONS.REPLACE, payload: {
+            dispatch(replace({
                 guestType: response.data.guestType,
-                index: guestTypeIndex
-            }})
+                index: guestTypeIndex                
+            }))
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
@@ -117,7 +121,7 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchGuestType, name, guestType.guestTypes, guestTypeIndex])
+    }, [dispatch, name, guestType.guestTypes, guestTypeIndex])
 
     const confirmDeleteGuestType = useCallback(index => {
         setGuestTypeIndex(index)
@@ -133,10 +137,7 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                 setDisableBtn(false)
                 setSuccPopupMsg(response.data.message)
                 setSuccPopupShown(true)                     
-                dispatchGuestType({
-                    type: ACTIONS.REMOVE, 
-                    payload: {indexes: guestTypeIndex}
-                })                
+                dispatch(remove( {indexes: guestTypeIndex} ))               
             })
             .catch(err => {
                 errorHandler(err, {'400': () => {
@@ -145,16 +146,24 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                     setErrPopupMsg(err.response.data.message)                      
                 }})               
             })          
-    }, [dispatchGuestType, guestType.guestTypes, guestTypeIndex])
+    }, [dispatch, guestType.guestTypes, guestTypeIndex])
 
 
     useEffect(() => {       
-        if(guestType.initialLoad === false){
-            getGuestTypes(ACTIONS.RESET)
+        if(guestType.isLoaded === false){
+            getGuestTypes(reset)
         }
-    }, [guestType.initialLoad, getGuestTypes])
+    }, [guestType.isLoaded, getGuestTypes])
+
+    useEffect(() => {
+        return () => {
+            // Make sure sync 'filters' and 'lastFilters' before leaving this page
+            // so when user enter this page again, the 'filters' is the same as 'lastFilters'
+            dispatch(syncFilters())
+        }
+    }, [dispatch])     
     
-    if(guestType.initialLoad === false){
+    if(guestType.isLoaded === false){
         return 'Loading ...'
     }
     return <>
@@ -175,44 +184,47 @@ function GuestTypePage({guestType, dispatchGuestType, user}){
                 <section className='flex-row items-center'>
                     <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
                         formAttr={{
-                            placeholder: 'Search guest types', value: filters.name,
-                            onChange: (e) => {dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'name', value: e.target.value
-                            }})},
-                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getGuestTypes(ACTIONS.RESET)})}                              
+                            placeholder: 'Search guest types', value: guestType.filters.name,
+                            onChange: (e) => {dispatch(updateFilters([
+                                {key: 'name', value: e.target.value}
+                            ]))},
+                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getGuestTypes(reset)})}                               
                         }}
                     />
                     <Button text={'Search'} iconName={'search'} iconOnly={'true'} attr={{
                         style: {flexShrink: 0},
                         disabled: disableBtn,
-                        onClick: () => {getGuestTypes(ACTIONS.RESET)}
+                        onClick: () => {getGuestTypes(reset)}
                     }}/>      
                 </section>,
                 <GuestTypesTable
                     guestTypes={guestType.guestTypes}
                     editHandler={editGuestType}
                     deleteHandler={confirmDeleteGuestType}
-                />     
+                />,
+                guestType.canLoadMore ? 
+                <button type="button" className='text-blue block' style={{fontSize: '1.46rem', margin: '0 auto'}} 
+                onClick={() => {getGuestTypes(append)}} disabled={disableBtn}>
+                    Load More
+                </button> : ''                  
             ]}/>}
         />
         <Modal
             size={'sm'} 
             shown={filterModalShown}
             toggleModal={() => {setFilterModalShown(state => !state)}}
-            heading={'Filter Room Type'}
+            heading={'Filter Guest Type'}
             body={<>
                 <Grid numOfColumns={1} items={[
-                    <Select label={'Rows shown'} formAttr={{value: filters.limit, onChange: (e) => {
-                            dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'limit', value: e.target.value
-                            }})
+                    <Select label={'Rows shown'} formAttr={{value: guestType.filters.limit, onChange: (e) => {
+                            dispatch(updateFilters( [{key: 'limit', value: e.target.value}] ))
                         }}}
                         options={[{value: 10}, {value: 20}, {value: 30}]}                        
                     />
                 ]}/>
             </>}
             footer={<Button text={'Filter'} attr={{
-                disabled: disableBtn, onClick: () => {getGuestTypes(ACTIONS.RESET)}
+                disabled: disableBtn, onClick: () => {getGuestTypes(reset)}
             }}/>}
         />
         <Modal

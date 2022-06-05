@@ -16,31 +16,29 @@ exports.index = async (req, res) => {
             })
             return res.send({roomTypes: roomTypes})
         }        
-        // Set filters
+        // Sanitized the queries
+        const queries = {...req.query}
+        queries.limit = parseInt(queries.limit) ? parseInt(queries.limit) : 10
+        queries.offset = parseInt(queries.offset) ? parseInt(queries.offset) : 0  
+        queries.name = Joi.string().required().trim().validate(queries.name)
+        queries.name = queries.name.error ? '' : queries.name.value        
+        // Set filters default values
         const filters = {
-            where: {},
-            limitOffset: {
-                limit: parseInt(req.query.limit) ? parseInt(req.query.limit) : 10,
-                offset: parseInt(req.query.offset) ? parseInt(req.query.offset) : 0                
-            }
+            where: {hotel_id: req.user.hotel_id},
+            limitOffset: {limit: queries.limit, offset: queries.offset}
         }
-        if(req.query.name){
-            const {value, error} = Joi.string().required().trim().validate(req.query.name)
-            if(error === undefined){ filters.where.name = value }
-        }
+        if(queries.name){
+            filters.where.name = {[Op.iLike]: `%${queries.name}%`}
+        }        
         const roomTypes = await RoomType.findAll({
             attributes: ['id', 'name'],
-            where: (() => {
-                const where = {...filters.where, hotel_id: req.user.hotel_id}
-                if(where.name){ where.name =  {[Op.iLike]: `%${where.name}%`}}
-                return where
-            })(),
+            where: filters.where,
             order: [['id', 'DESC']],
             ...filters.limitOffset
         })
         res.send({
             roomTypes: roomTypes,
-            filters: {...filters.where, ...filters.limitOffset}
+            filters: queries
         })
     } catch(err) {
         logger.error(err, {errorObj: err})
