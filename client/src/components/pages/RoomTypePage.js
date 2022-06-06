@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 
 import {append, prepend, replace, remove, updateFilters, syncFilters, reset} from '../../features/roomTypeSlice'
-
 import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
 import Table from '../Table'

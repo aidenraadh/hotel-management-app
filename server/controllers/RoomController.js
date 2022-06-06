@@ -9,26 +9,24 @@ const logger     = require('../utils/logger')
 
 exports.index = async (req, res) => {    
     try {
-        // Set filters
+        // Sanitized the queries
+        const queries = {...req.query}
+        queries.limit = parseInt(queries.limit) ? parseInt(queries.limit) : 10
+        queries.offset = parseInt(queries.offset) ? parseInt(queries.offset) : 0  
+        queries.name = Joi.string().required().trim().validate(queries.name)
+        queries.name = queries.name.error ? '' : queries.name.value        
+        // Set filters default values
         const filters = {
-            where: {},
-            limitOffset: {
-                limit: parseInt(req.query.limit) ? parseInt(req.query.limit) : 10,
-                offset: parseInt(req.query.offset) ? parseInt(req.query.offset) : 0                
-            }
+            where: {hotel_id: req.user.hotel_id},
+            limitOffset: {limit: queries.limit, offset: queries.offset}
         }
-        if(req.query.name){
-            const {value, error} = Joi.string().required().trim().validate(req.query.name)
-            if(error === undefined){ filters.where.name = value }
-        }
+        if(queries.name){
+            filters.where.name = {[Op.iLike]: `%${queries.name}%`}
+        } 
         // Get the rooms
         const rooms = await Room.findAll({
             attributes: ['id', 'name'],
-            where: (() => {
-                const where = {...filters.where, hotel_id: req.user.hotel_id}
-                if(where.name){ where.name =  {[Op.iLike]: `%${where.name}%`}}
-                return where
-            })(),
+            where: filters.where,
             include: [
                 {
                     model: RoomType, as: 'roomType', attributes: ['id', 'name']
@@ -38,13 +36,13 @@ exports.index = async (req, res) => {
             ...filters.limitOffset
         })
         // Get the room types
-        const roomTypesList = await RoomType.findAll({
+        const roomTypes = await RoomType.findAll({
             attributes: ['id', 'name']
         })
         res.send({
             rooms: rooms,
-            roomTypesList: roomTypesList,
-            filters: {...filters.where, ...filters.limitOffset}
+            roomTypes: roomTypes,
+            filters: queries
         })
     } catch(err) {
         logger.error(err, {errorObj: err})
@@ -60,13 +58,13 @@ exports.store = async (req, res) => {
         if(errMsg){
             return res.status(400).send({message: errMsg})
         }
-        const roomType = await GuestType.create({
+        const room = await Room.create({
             name: values.name, 
             room_type_id: values.roomTypeId, 
             hotel_id: req.user.hotel_id,
         })
         res.send({
-            roomType: roomType,
+            room: await getRoom(room.id, room.hotel_id),
             message: 'Room successfully created'
         })        
     } catch (err) {
@@ -91,9 +89,8 @@ exports.update = async (req, res) => {
         room.room_type_id = values.roomTypeId
     
         await room.save()    
-    
         res.send({
-            room: room,
+            room: await getRoom(req.params.id, req.user.hotel_id),
             message: 'Room successfully updated'
         }) 
     } catch (err) {
@@ -186,7 +183,12 @@ const getRoom = async (id, hotelId) => {
     try {
         return await Room.findOne({
             where: {id: id, hotel_id: hotelId},
-            attributes: ['id', 'name']
+            attributes: ['id', 'name'],
+            include: [
+                {
+                    model: RoomType, as: 'roomType', attributes: ['id', 'name']
+                }
+            ],
         })
     } catch (error) {
         throw error

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import {useDispatch, useSelector} from 'react-redux'
 
 import {append, prepend, replace, remove, updateFilters, syncFilters, reset} from '../../features/guestTypeSlice'
-
 import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
 import Table from '../Table'
@@ -283,8 +282,9 @@ function GuestTypePage({user}){
 
 const GuestTypesTable = ({guestTypes, editHandler, deleteHandler}) => {
     return <Table
-        headings={['Name', 'Actions']}
+        headings={['No.', 'Name', 'Actions']}
         body={guestTypes.map((guestType, index) => ([
+            (index + 1),
             guestType.name, 
             <>
                 <Button size={'sm'} type={'light'} text={'Edit'} attr={{

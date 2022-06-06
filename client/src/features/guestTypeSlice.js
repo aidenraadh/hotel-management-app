@@ -26,8 +26,8 @@ const guestTypeSlice = createSlice({
                     [...state.guestTypes, ...payload.guestTypes] : 
                     [...state.guestTypes, payload.guestTypes]
                 ),
-                filters: {...filters, ...payload.filters},
-                lastFilters: {...filters, ...payload.filters},
+                filters: {...state.lastFilters, ...payload.filters},
+                lastFilters: {...state.lastFilters, ...payload.filters},
                 canLoadMore: payload.guestTypes.length < payload.filters.limit ? false : true,
             }
         },
@@ -84,7 +84,7 @@ const guestTypeSlice = createSlice({
                     }     
                 }                  
             }
-            return {...state, filters: updatedFilters}
+            return {...state, filters: {...state.lastFilters, ...updatedFilters}}
         },   
         // Sync 'filters' with 'lastFilters'
         syncFilters: (state, action) => {

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useReducer, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import {useDispatch, useSelector} from 'react-redux'
 
-import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../reducers/RoomReducer'
-
+import {append, prepend, replace, remove, updateFilters, syncFilters, reset} from '../../features/roomSlice'
 import { Button } from '../Buttons'
 import {PlainCard} from '../Cards'
 import Table from '../Table'
@@ -10,10 +10,12 @@ import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
-function RoomPage({room, dispatchRoom, user}){
+function RoomPage({user}){
+    const room = useSelector(state => state.room)
+    const dispatch = useDispatch()
+
     const [disableBtn , setDisableBtn] = useState(false)
     // Filter rooms
-    const [filters, dispatchFilters] = useReducer(filterReducer, getFilters())
     const [filterModalShown, setFilterModalShown] = useState(false)
     // Create / edit room
     const [roomIndex, setRoomIndex] = useState('')
@@ -30,45 +32,42 @@ function RoomPage({room, dispatchRoom, user}){
     const [succPopupShown, setSuccPopupShown] = useState(false)
     const [popupSuccMsg, setSuccPopupMsg] = useState('')    
 
-    const getRooms = useCallback((actionType) => {
-        // Get the queries
-        const queries = {...filters}     
-        // When the room is refreshed, set the offset to 0
-        queries.offset = actionType === ACTIONS.RESET ? 0 : (queries.offset + queries.limit)  
-
-        if(room.initialLoad === false){
-            setDisableBtn(true)
-        }                  
-        api.get(`/rooms${getQueryString(filters)}`)
+    const getRooms = useCallback(actionType => {
+        let queries = {}
+        // When the state is reset, set the offset to 0
+        if(actionType === reset){
+            queries = {...room.filters}
+            queries.offset = 0
+        }
+        // When the state is loaded more, increase the offset by the limit
+        else if(actionType === append){
+            queries = {...room.lastFilters}
+            queries.offset += queries.limit 
+        }
+        setDisableBtn(true)
+        api.get(`/rooms${getQueryString(queries)}`)
         .then(response => {
             const responseData = response.data
-            const roomPayload = {
-                rooms: responseData.rooms,
-                filters: responseData.filters                
-            }
-            // When the room is reset, add room types list
-            if(actionType === ACTIONS.RESET){
-                roomPayload.roomTypesList = response.data.roomTypesList
-            }
             setDisableBtn(false)
             setFilterModalShown(false)
-            dispatchFilters({type: FILTER_ACTIONS.RESET, payload: {
-                filters: responseData.filters,
-            }})
-            dispatchRoom({type: actionType, payload: roomPayload})
+            dispatch(actionType({
+                rooms: responseData.rooms,
+                roomTypes: responseData.roomTypes,
+                filters: responseData.filters
+            }))
         })
         .catch(error => {
             errorHandler(error)
         })
-    }, [filters, room.initialLoad, dispatchRoom])
+    }, [room, dispatch])
 
     const createRoom = useCallback(() => {
         setRoomIndex('')
         setName('')
-        setRoomTypeId('')
+        setRoomTypeId(room.roomTypes[0] ? room.roomTypes[0].id : '')
         setMakeRoomMdlHeading('Create Room')
         setMakeRoomMdlShown(true)        
-    }, [])
+    }, [room])
 
     const storeRoom = useCallback(() => {
         setDisableBtn(true)
@@ -78,10 +77,10 @@ function RoomPage({room, dispatchRoom, user}){
         })
         .then(response => {
             setDisableBtn(false)
-            setMakeRoomMdlShown(false)                
-            dispatchRoom({type: ACTIONS.PREPEND, payload: {
-                rooms: response.data.room,
-            }})
+            setMakeRoomMdlShown(false)
+            dispatch(prepend({
+                rooms: response.data.room
+            }))      
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
@@ -90,18 +89,19 @@ function RoomPage({room, dispatchRoom, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchRoom, name, roomTypeId])
+    }, [dispatch, name, roomTypeId])
 
     const editRoom = useCallback((index) => {
         const targetRoom = room.rooms[index] // Get the room
         setRoomIndex(index)
         setName(targetRoom.name)
-        setRoomTypeId(targetRoom.room_type_id)
+        setRoomTypeId(targetRoom.roomType.id)
         setMakeRoomMdlHeading('Edit Room')
         setMakeRoomMdlShown(true)
-    }, [room.rooms])
+    }, [room])
 
     const updateRoom = useCallback(() => {
+        console.log(roomTypeId)
         const targetRoom = room.rooms[roomIndex] // Get the room
         setDisableBtn(true)
 
@@ -113,10 +113,10 @@ function RoomPage({room, dispatchRoom, user}){
             setMakeRoomMdlShown(false)      
             setSuccPopupMsg(response.data.message)
             setSuccPopupShown(true)                         
-            dispatchRoom({type: ACTIONS.REPLACE, payload: {
+            dispatch(replace({
                 room: response.data.room,
                 index: roomIndex
-            }})
+            }))
         })
         .catch(err => {
             errorHandler(err, {'400': () => {
@@ -125,7 +125,7 @@ function RoomPage({room, dispatchRoom, user}){
                 setErrPopupMsg(err.response.data.message)                   
             }})
         })
-    }, [dispatchRoom, name, room.rooms, roomIndex, roomTypeId])
+    }, [dispatch, name, room, roomIndex, roomTypeId])
 
     const confirmDeleteRoom = useCallback(index => {
         setRoomIndex(index)
@@ -141,10 +141,9 @@ function RoomPage({room, dispatchRoom, user}){
                 setDisableBtn(false)
                 setSuccPopupMsg(response.data.message)
                 setSuccPopupShown(true)                     
-                dispatchRoom({
-                    type: ACTIONS.REMOVE, 
-                    payload: {indexes: roomIndex}
-                })                
+                dispatch(remove({
+                    indexes: roomIndex
+                }))                
             })
             .catch(err => {
                 errorHandler(err, {'400': () => {
@@ -153,16 +152,24 @@ function RoomPage({room, dispatchRoom, user}){
                     setErrPopupMsg(err.response.data.message)                      
                 }})               
             })          
-    }, [dispatchRoom, room.rooms, roomIndex])
+    }, [dispatch, room, roomIndex])
 
 
     useEffect(() => {       
-        if(room.initialLoad === false){
-            getRooms(ACTIONS.RESET)
+        if(room.isLoaded === false){
+            getRooms(reset)
         }
-    }, [room.initialLoad, getRooms])
+    }, [room, getRooms])
+
+    useEffect(() => {
+        return () => {
+            // Make sure sync 'filters' and 'lastFilters' before leaving this page
+            // so when user enter this page again, the 'filters' is the same as 'lastFilters'
+            dispatch(syncFilters())
+        }
+    }, [dispatch])     
     
-    if(room.initialLoad === false){
+    if(room.isLoaded === false){
         return 'Loading ...'
     }
     return <>
@@ -183,24 +190,29 @@ function RoomPage({room, dispatchRoom, user}){
                 <section className='flex-row items-center'>
                     <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
                         formAttr={{
-                            placeholder: 'Search rooms', value: filters.name,
-                            onChange: (e) => {dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'name', value: e.target.value
-                            }})},
-                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRooms(ACTIONS.RESET)})}                              
+                            placeholder: 'Search rooms', value: room.filters.name,
+                            onChange: (e) => {dispatch(updateFilters([
+                                {key: 'name', value: e.target.value}
+                            ]))},
+                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRooms(reset)})}                              
                         }}
                     />
                     <Button text={'Search'} iconName={'search'} iconOnly={'true'} attr={{
                         style: {flexShrink: 0},
                         disabled: disableBtn,
-                        onClick: () => {getRooms(ACTIONS.RESET)}
+                        onClick: () => {getRooms(reset)}
                     }}/>      
                 </section>,
                 <RoomsTable
                     rooms={room.rooms}
                     editHandler={editRoom}
                     deleteHandler={confirmDeleteRoom}
-                />     
+                />,
+                room.canLoadMore ? 
+                <button type="button" className='text-blue block' style={{fontSize: '1.46rem', margin: '0 auto'}} 
+                onClick={() => {getRooms(append)}} disabled={disableBtn}>
+                    Load More
+                </button> : ''                
             ]}/>}
         />
         <Modal
@@ -210,17 +222,17 @@ function RoomPage({room, dispatchRoom, user}){
             heading={'Filter Room Type'}
             body={<>
                 <Grid numOfColumns={1} items={[
-                    <Select label={'Rows shown'} formAttr={{value: filters.limit, onChange: (e) => {
-                            dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'limit', value: e.target.value
-                            }})
+                    <Select label={'Rows shown'} formAttr={{value: room.filters.limit, onChange: (e) => {
+                            dispatch(updateFilters([
+                                {key: 'limit', value: e.target.value}
+                            ]))
                         }}}
                         options={[{value: 10}, {value: 20}, {value: 30}]}                        
                     />
                 ]}/>
             </>}
             footer={<Button text={'Filter'} attr={{
-                disabled: disableBtn, onClick: () => {getRooms(ACTIONS.RESET)}
+                disabled: disableBtn, onClick: () => {getRooms(reset)}
             }}/>}
         />
         <Modal
@@ -242,7 +254,7 @@ function RoomPage({room, dispatchRoom, user}){
                         value: roomTypeId,
                         onChange: (e) => {setRoomTypeId(e.target.value)}
                     }}
-                    options={room.roomTypesList.map(roomType => ({
+                    options={room.roomTypes.map(roomType => ({
                         value: roomType.id, text: roomType.name
                     }))}                        
                 />                             
@@ -288,8 +300,9 @@ function RoomPage({room, dispatchRoom, user}){
 
 const RoomsTable = ({rooms, editHandler, deleteHandler}) => {
     return <Table
-        headings={['Name', 'Room Type', 'Actions']}
+        headings={['No.', 'Name', 'Room Type', 'Actions']}
         body={rooms.map((room, index) => ([
+            (index + 1),
             room.name, room.roomType.name,
             <>
                 <Button size={'sm'} type={'light'} text={'Edit'} attr={{

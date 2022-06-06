@@ -7,65 +7,65 @@ const filters = {
     offset: 0,      
 }
 
-const roomTypeSlice = createSlice({
-    name: 'roomType',
+const roomSlice = createSlice({
+    name: 'room',
     initialState: {
-        roomTypes: [],
+        rooms: [],
         lastFilters: filters, // Contains last filters from the server
         filters: filters, // Contains changeable filters
-        canLoadMore: true, // Whether or not the 'roomTypes' can be loaded more
+        canLoadMore: true, // Whether or not the 'rooms' can be loaded more
         isLoaded: false, // Where or not this state is already loaded
     },
     reducers: {
-        // Append room type(s) to 'roomTypes'
+        // Append rooms(s) to 'rooms'
         append: (state, action) => {
             const payload = {...action.payload}
             return {
-                ...state, roomTypes: (
-                    Array.isArray(payload.roomTypes) ? 
-                    [...state.roomTypes, ...payload.roomTypes] : 
-                    [...state.roomTypes, payload.roomTypes]
+                ...state, rooms: (
+                    Array.isArray(payload.rooms) ? 
+                    [...state.rooms, ...payload.rooms] : 
+                    [...state.rooms, payload.rooms]
                 ),
                 filters: {...state.lastFilters, ...payload.filters},
                 lastFilters: {...state.lastFilters, ...payload.filters},
-                canLoadMore: payload.roomTypes.length < payload.filters.limit ? false : true,
+                canLoadMore: payload.rooms.length < payload.filters.limit ? false : true,
             }
         },
-        // Prepend array of room types(s) to 'roomTypes'
+        // Prepend array of room(s) to 'rooms'
         prepend: (state, action) => {
             const payload = {...action.payload}
             return {
-                ...state, roomTypes: (
-                    Array.isArray(payload.roomTypes) ? 
-                    [...payload.roomTypes, ...state.roomTypes] : 
-                    [payload.roomTypes, ...state.roomTypes]                
+                ...state, rooms: (
+                    Array.isArray(payload.rooms) ? 
+                    [...payload.rooms, ...state.rooms] : 
+                    [payload.rooms, ...state.rooms]                
                 ),
             };
         },
-        // Replace a room type inside 'roomTypes'
+        // Replace a room inside 'rooms'
         replace: (state, action) => {
             const payload = {...action.payload}
             return {
-                ...state, roomTypes: (() => {
-                    const roomTypes = [...state.roomTypes]
-                    roomTypes[payload.index] = payload.roomType
-                    return roomTypes
+                ...state, rooms: (() => {
+                    const rooms = [...state.rooms]
+                    rooms[payload.index] = payload.room
+                    return rooms
                 })()
             };  
         },       
-        // Remove room type(s) from 'roomTypes'
+        // Remove room(s) from 'rooms'
         remove: (state, action) => {
             const payload = {...action.payload}
             return {
-                ...state, roomTypes: (() => {
-                    let roomTypes = [...state.roomTypes]
+                ...state, rooms: (() => {
+                    let rooms = [...state.rooms]
                     if(Array.isArray(payload.indexes)){
-                        payload.indexes.forEach(index => {roomTypes.splice(index, 1)})
-                        return roomTypes
+                        payload.indexes.forEach(index => {rooms.splice(index, 1)})
+                        return rooms
                     }
-                    roomTypes.splice(payload.indexes, 1)
+                    rooms.splice(payload.indexes, 1)
 
-                    return roomTypes
+                    return rooms
                 })()
             }; 
         },
@@ -94,15 +94,16 @@ const roomTypeSlice = createSlice({
         reset: (state, action) => {
             const payload = {...action.payload}
             return {
-                ...state, roomTypes: payload.roomTypes,
+                ...state, rooms: payload.rooms,
+                roomTypes: payload.roomTypes,
                 filters: {...filters, ...payload.filters},
                 lastFilters: {...filters, ...payload.filters},
                 isLoaded: true,
-                canLoadMore: payload.roomTypes.length < payload.filters.limit ? false : true,
+                canLoadMore: payload.rooms.length < payload.filters.limit ? false : true,
             }
         }
     }
 })
 
-export const {append, prepend, replace, remove, updateFilters, syncFilters, reset} = roomTypeSlice.actions
-export default roomTypeSlice.reducer
+export const {append, prepend, replace, remove, updateFilters, syncFilters, reset} = roomSlice.actions
+export default roomSlice.reducer
