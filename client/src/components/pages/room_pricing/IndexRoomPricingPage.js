@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useReducer, useState } from 'react'
-
-import { ACTIONS, FILTER_ACTIONS, filterReducer, getFilters } from '../../../reducers/RoomPricingReducer'
-
+import { useCallback, useEffect, useState } from 'react'
+import {useDispatch, useSelector} from 'react-redux'
 import {Link} from 'react-router-dom'
-
+import {append, remove, updateFilters, syncFilters, reset} from '../../../features/roomPricingSlice'
 import { Button } from '../../Buttons'
 import {PlainCard} from '../../Cards'
 import Table from '../../Table'
@@ -12,10 +10,12 @@ import { api, errorHandler, formatNum, getQueryString, keyHandler } from '../../
 import { Grid } from '../../Layouts'
 import { Select, TextInput } from '../../Forms'
 
-function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
+function IndexRoomPricingPage({user}){
+    const roomPricing = useSelector(state => state.roomPricing)
+    const dispatch = useDispatch()
+
     const [disableBtn , setDisableBtn] = useState(false)
     // Filter room types
-    const [filters, dispatchFilters] = useReducer(filterReducer, getFilters())
     const [filterModalShown, setFilterModalShown] = useState(false)
     // View room pricings
     const [viewedRoomType, setViewedRoomType] = useState('')
@@ -31,36 +31,37 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
     const [popupSuccMsg, setSuccPopupMsg] = useState('')    
 
     const getRoomPricings = useCallback((actionType) => {
-        // Get the queries
-        const queries = {...filters}     
-        // When the room type is refreshed, set the offset to 0
-        queries.offset = actionType === ACTIONS.RESET ? 0 : (queries.offset + queries.limit)  
-
-        if(roomPricing.initialLoad === false){
-            setDisableBtn(true)
-        }                  
-        api.get(`/room-pricings${getQueryString(filters)}`)
+        let queries = {}
+        // When the state is reset, set the offset to 0
+        if(actionType === reset){
+            queries = {...roomPricing.filters}
+            queries.offset = 0
+        }
+        // When the state is loaded more, increase the offset by the limit
+        else if(actionType === append){
+            queries = {...roomPricing.lastFilters}
+            queries.offset += queries.limit 
+        }
+        setDisableBtn(true)                  
+        api.get(`/room-pricings${getQueryString(queries)}`)
         .then(response => {
             const responseData = response.data
             setDisableBtn(false)
             setFilterModalShown(false)
-            dispatchFilters({type: FILTER_ACTIONS.RESET, payload: {
-                filters: responseData.filters,
-            }})
-            dispatchRoomPricing({type: actionType, payload: {
+            dispatch(actionType({
                 roomTypes: responseData.roomTypes,
                 filters: responseData.filters
-            }})
+            }))
         })
         .catch(error => {
             errorHandler(error)
         })
-    }, [filters, roomPricing.initialLoad, dispatchRoomPricing])
+    }, [roomPricing, dispatch])
 
     const viewRoomPricing = useCallback(index => {
         setViewedRoomType(roomPricing.roomTypes[index])
         setViewRoomPricingsMdlShown(true)
-    }, [roomPricing.roomTypes])    
+    }, [roomPricing])    
 
     const confirmDeleteRoomPricing = useCallback(index => {
         setRoomTypeIndex(index)
@@ -76,10 +77,7 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
                 setDisableBtn(false)
                 setSuccPopupMsg(response.data.message)
                 setSuccPopupShown(true)                     
-                dispatchRoomPricing({
-                    type: ACTIONS.REMOVE, 
-                    payload: {indexes: roomTypeIndex}
-                })                
+                dispatch(remove({ indexes: roomTypeIndex }))                
             })
             .catch(err => {
                 errorHandler(err, {'400': () => {
@@ -88,16 +86,26 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
                     setErrPopupMsg(err.response.data.message)                      
                 }})               
             })          
-    }, [dispatchRoomPricing, roomPricing.roomTypes, roomTypeIndex])
+    }, [dispatch, roomPricing, roomTypeIndex])
 
 
     useEffect(() => {       
-        if(roomPricing.initialLoad === false){
-            getRoomPricings(ACTIONS.RESET)
+        if(roomPricing.isLoaded === false){
+            getRoomPricings(reset)
         }
-    }, [roomPricing.initialLoad, getRoomPricings])
+    }, [roomPricing, getRoomPricings])
+
+    // When the page is rendered and roomType is already loaded,
+    // set the
+    useEffect(() => {
+        return () => {
+            // Make sure sync 'filters' and 'lastFilters' before leaving this page
+            // so when user enter this page again, the 'filters' is the same as 'lastFilters'
+            dispatch(syncFilters())
+        }
+    }, [dispatch])     
     
-    if(roomPricing.initialLoad === false){
+    if(roomPricing.isLoaded === false){
         return 'Loading ...'
     }
     return <>
@@ -113,29 +121,36 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
             </Link>           
         </section>    
         <PlainCard
-            body={<Grid numOfColumns={1} items={[
-                <section className='flex-row items-center'>
-                    <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
-                        formAttr={{
-                            placeholder: 'Search room types', value: filters.name,
-                            onChange: (e) => {dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'name', value: e.target.value
-                            }})},
-                            onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRoomPricings(ACTIONS.RESET)})}                              
-                        }}
-                    />
-                    <Button text={'Search'} iconName={'search'} iconOnly={'true'} attr={{
-                        style: {flexShrink: 0},
-                        disabled: disableBtn,
-                        onClick: () => {getRoomPricings(ACTIONS.RESET)}
-                    }}/>      
-                </section>,
-                <RoomPricingsTable
-                    roomTypes={roomPricing.roomTypes}
-                    viewHandler={viewRoomPricing}
-                    deleteHandler={confirmDeleteRoomPricing}
-                />     
-            ]}/>}
+            body={
+                <Grid numOfColumns={1} items={[
+                    <section className='flex-row items-center'>
+                        <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
+                            formAttr={{
+                                placeholder: 'Search room types', value: roomPricing.filters.name,
+                                onChange: e => {dispatch(updateFilters([
+                                    {key: 'name', value: e.target.value}
+                                ]))},
+                                onKeyUp: (e) => {keyHandler(e, 'Enter', () => {getRoomPricings(reset)})}                              
+                            }}
+                        />
+                        <Button text={'Search'} iconName={'search'} iconOnly={'true'} attr={{
+                            style: {flexShrink: 0},
+                            disabled: disableBtn,
+                            onClick: () => {getRoomPricings(reset)}
+                        }}/>      
+                    </section>,
+                    <RoomPricingsTable
+                        roomTypes={roomPricing.roomTypes}
+                        viewHandler={viewRoomPricing}
+                        deleteHandler={confirmDeleteRoomPricing}
+                    />,
+                    roomPricing.canLoadMore ? 
+                    <button type="button" className='text-blue block' style={{fontSize: '1.46rem', margin: '0 auto'}} 
+                    onClick={() => {getRoomPricings(append)}} disabled={disableBtn}>
+                        Load More
+                    </button> : ''                       
+                ]}/>
+            }
         />
         <Modal
             size={'sm'} 
@@ -144,17 +159,17 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
             heading={'Filter Room Type'}
             body={<>
                 <Grid numOfColumns={1} items={[
-                    <Select label={'Rows shown'} formAttr={{value: filters.limit, onChange: (e) => {
-                            dispatchFilters({type: FILTER_ACTIONS.UPDATE, payload: {
-                                key: 'limit', value: e.target.value
-                            }})
+                    <Select label={'Rows shown'} formAttr={{value: roomPricing.filters.limit, onChange: (e) => {
+                            dispatch(updateFilters([
+                                {key: 'limit', value: e.target.value}
+                            ]))
                         }}}
                         options={[{value: 10}, {value: 20}, {value: 30}]}                        
                     />
                 ]}/>
             </>}
             footer={<Button text={'Filter'} attr={{
-                disabled: disableBtn, onClick: () => {getRoomPricings(ACTIONS.RESET)}
+                disabled: disableBtn, onClick: () => {getRoomPricings(reset)}
             }}/>}
         />      
         <Modal
@@ -195,8 +210,9 @@ function IndexRoomPricingPage({roomPricing, dispatchRoomPricing, user}){
 
 const RoomPricingsTable = ({roomTypes, viewHandler, deleteHandler}) => {
     return <Table
-        headings={['Room Type', <span className='text-right block'>Actions</span>]}
+        headings={['No.', 'Room Type', <span className='text-right block'>Actions</span>]}
         body={roomTypes.map((roomType, index) => ([
+            (index + 1),
             roomType.name, 
             <span className='flex-row items-center content-end'>
                 <Button size={'sm'} type={'light'} text={'View'} attr={{
@@ -215,25 +231,18 @@ const RoomPricingsDetail = ({roomType}) => {
     if(!roomType){
         return ''
     }
-    const guestTypeStyles = {
-        fontSize: '1.46rem',
-        backgroundColor: '#E1F0FF', 
-        borderRadius: '0.55rem', 
-        padding: '1rem', 
-        margin: '2rem 0 1rem'
-    }
     const dayNames = [
         'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
         'saturday', 'sunday'
     ]
-    return <Grid numOfColumns={1} items={roomType.roomPricings.map((roomPricing, roomPricingIdx) => {
+    return <Grid numOfColumns={1} classes={'guest-type-room-pricings'} items={roomType.roomPricings.map((roomPricing, roomPricingIdx) => {
         return (<>
             <section key={roomPricingIdx}>
-                <div className='text-blue text-medium' style={guestTypeStyles}>
+                <h6 className='text-blue text-medium guest-type'>
                     Guest type: <span className='text-capitalize'>{roomPricing.guestType.name}</span>                 
-                </div>           
+                </h6>           
                 <Grid numOfColumns={2} items={dayNames.map((day, dayIndex) => (
-                    <p className='flex-row content-space-between text-capitalize' key={dayIndex} style={{fontSize: '1.36rem'}}>
+                    <p className='flex-row content-space-between text-capitalize day-price' key={dayIndex}>
                         <span>{day}</span>
                         <span>Rp. {formatNum(roomPricing[`price_on_${day}`])}</span>
                     </p>                    

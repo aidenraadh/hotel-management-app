@@ -1,10 +1,11 @@
-const model      = require('../models/index')
-const RoomType   = model.RoomType
-const Sequelize  = require("sequelize")
-const {Op}       = require("sequelize")
-const Joi        = require('joi')
-const filterKeys = require('../utils/filterKeys')
-const logger     = require('../utils/logger')
+const Sequelize             = require("sequelize")
+const {Op}                  = require("sequelize")
+const Joi                   = require('joi')
+const filterKeys            = require('../utils/filterKeys')
+const logger                = require('../utils/logger')
+const RoomPricingController = require('../controllers/RoomPricingController.js')
+const model                 = require('../models/index')
+const RoomType              = model.RoomType
 
 exports.index = async (req, res) => {    
     try {
@@ -95,7 +96,10 @@ exports.destroy = async (req, res) => {
         if(!roomType){
             return res.status(400).send({message: 'Room type not found'})
         }
+        // Destroy the room type
         await roomType.destroy()
+        // Destroy the room pricings for this room type
+        await RoomPricingController.destroyRoomPricings(roomType.id, RoomType)
         
         res.send({
             message: 'Room type successfully deleted'

@@ -1,8 +1,6 @@
-import React, { useReducer, useState } from "react";
+import React, {useState } from "react";
 import ErrorBoundary from './components/ErrorBoundary'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
-
-import roomPricingReducer, {INIT_STATE as ROOM_PRICING_INIT_STATE} from "./reducers/RoomPricingReducer";
 
 import ProtectedRoute from './components/ProtectedRoute'
 import {isAuth, getUser} from './components/Auth'
@@ -21,7 +19,6 @@ import ProfilePage from './components/pages/ProfilePage'
 
 function App(){
     const [sidebarShown, setSidebarShown] = useState(false)
-    const [roomPricing, dispatchRoomPricing] = useReducer(roomPricingReducer, ROOM_PRICING_INIT_STATE)  
     const user = getUser()
 
     const sidebarItems = {
@@ -91,7 +88,7 @@ function App(){
                             user: user
                         }}/>        
                         <ProtectedRoute path={'/room-pricings'} exact component={IndexRoomPricingPage} props={{
-                            user: user, roomPricing: roomPricing, dispatchRoomPricing: dispatchRoomPricing
+                            user: user,
                         }}/>          
                         <ProtectedRoute path={'/room-pricings/edit'} exact component={CrtEdtRoomPricingPage} props={{
                             user: user,

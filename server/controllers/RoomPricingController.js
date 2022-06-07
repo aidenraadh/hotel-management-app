@@ -1,11 +1,11 @@
-const model      = require('../models/index')
-const RoomPricing   = model.RoomPricing
-const RoomType   = model.RoomType
+const model       = require('../models/index')
+const RoomPricing = model.RoomPricing
+const RoomType    = model.RoomType
 const GuestType   = model.GuestType
-const {Op}       = require("sequelize")
-const Joi        = require('joi')
-const filterKeys = require('../utils/filterKeys')
-const logger     = require('../utils/logger')
+const {Op}        = require("sequelize")
+const Joi         = require('joi')
+const filterKeys  = require('../utils/filterKeys')
+const logger      = require('../utils/logger')
 
 exports.index = async (req, res) => {    
     try {
@@ -32,6 +32,7 @@ exports.index = async (req, res) => {
                 {
                     model: RoomPricing, as: 'roomPricings',
                     attributes: {exclude: ['room_type_id', 'guest_type_id', 'created_at', 'updated_at']},
+                    required: true, // Get only room type that has room pricings
                     include: [
                         // Get guest type, make sure the guest type and for the hotel exists
                         {
@@ -114,16 +115,14 @@ exports.destroy = async (req, res) => {
     try {
         const roomType = await RoomType.findOne({
             attributes: ['id'],
-            where: {id: req.params.id, hotel_id: req.user.hotel_id}
+            where: {id: req.params.roomTypeId, hotel_id: req.user.hotel_id}
         })
         if(!roomType){
             return res.status(400).send({
                 message: 'Room pricings for this room type is not exist'
             })             
         }
-        await RoomPricing.destroy({
-            where: {room_type_id: req.params.roomTypeId}
-        })
+        await removeRoomPricings(roomType.id, RoomType)
         res.send({
             message: 'Room pricings successfully deleted'
         })            
@@ -131,6 +130,21 @@ exports.destroy = async (req, res) => {
         logger.error(err, {errorObj: err})
         res.status(500).send({message: err.message})         
     } 
+}
+
+/**
+ * 
+ * @param {integer} id - ID of either room type of guest type 
+ * @param {object} tableModel 
+ */
+
+exports.destroyRoomPricings = async (id, tableModel) => {
+    try {
+        await removeRoomPricings(id, tableModel)   
+    } catch (err) {
+        logger.error(err, {errorObj: err})
+        res.status(500).send({message: err.message})        
+    }
 }
 
 /**
@@ -280,5 +294,32 @@ const validateInput = async (req, inputKeys) => {
         return {values: values}
     } catch (err) {
         return {errMsg: err.message}
+    }
+}
+
+/**
+ * 
+ * @param {integer} id - ID of either room type of guest type 
+ * @param {object} tableModel 
+ */
+
+// Destroy room pricings by the room type or guest type
+const removeRoomPricings = async (id, tableModel) => {
+    try {
+        let where = {}
+        console.log(tableModel.name)
+        switch (tableModel.name) {
+            case 'RoomType':
+                where = {room_type_id: id}
+                break;
+            case 'GuestType':
+                where = {guest_type_id: id}
+                break;        
+            default:
+                throw 'Cant delete room pricings by this model'
+        }        
+        await RoomPricing.destroy({where: where})        
+    } catch (error) {
+        throw new Error(error)
     }
 }

@@ -51,27 +51,26 @@ function ProfilePage({user}){
     }
     return (<>
         <SimpleCard
+            attr={{id: 'profile-card'}}
             heading={'Your Profile'}
             body={
-                <div className="flex-row">
-                    <img src='/images/user_default_thumbnail.jpg' alt={'User avatar'}
-                    style={{width: '16rem', marginRight: '2rem'}}/>
-                    <div>
-                        <p>
-                            Name: {user.name}<br/>
-                        </p>
-                        <p>
-                            Role: {user.role.name}<br/>
-                        </p>                                    
-                    </div>
-                </div>
+                <p className="flex-row items-start">
+                    <img src='images/user_default_thumbnail.jpg' alt='user avatar'/>
+                    <span className="flex-col">
+                        <span>Name: {user.name}</span>
+                        <span>Role: {user.role.name}</span>                        
+                    </span>
+                    <Button text={'Update profile'} size={'sm'} attr={{
+                        onClick: () => {setUpdProfileModal(true)}
+                    }}/>                     
+                </p>  
             }
-            action={<>
-                <Button text={'Update profile'} size={'sm'} attr={{
-                    onClick: () => {setUpdProfileModal(true)}
-                }}/>              
+            action={<>            
                 <Button text={'Logout'} color={'red'} size={'sm'} attr={{
-                    onClick: logout,
+                    onClick: () => {
+                        localStorage.removeItem("languages");
+                        logout()
+                    },
                 }} />            
             </>}
         />

@@ -3,7 +3,6 @@
 @import 'css/layouts.css';
 @import 'css/utilities.css';
 @import 'css/media-queries.css';
-@import 'css/custom.css';
 
 #login-page-container{
     min-height: 100vh;
@@ -19,8 +18,119 @@
     width: 100%;
 }
 
+.page-header .heading{
+	font-size: 1.8rem;
+	color: #5E6278;
+}
+
+.page-header .heading .svg-icon{
+	width: 4rem;
+	height: 4rem;
+	border-radius: 0.55rem;
+}
+
+.page-header .heading .svg-icon svg{
+	width: 70%;
+	height: 70%;
+}
+
+.load-more-btn{
+	margin: 2rem auto 0;
+}
+
+.load-more-btn svg{
+	width: 1.4em;
+	margin-right: 1rem;
+}
+
+.floating-btn{
+	position: fixed; right: 2.4vw; bottom: 6rem;
+	width: 6.6rem;
+	height: 6.6rem;
+	border-radius: 100%;
+	z-index: 97;
+	background-color: #4A7DFF;
+}
+
+.table-stats{
+	width: 49%;
+	margin-bottom: 2rem;
+}
+
+.collapsible-arrow > .svg-icon{
+	margin-right: 0.1em;
+	font-size: 2rem;
+	transition: transform 0.3s;
+}
+
+.collapsible-arrow.expanded > .svg-icon{
+	transform: rotate(-180deg);
+}
+
+.sliding-stats-container{
+	overflow-x: auto;
+}
+
+.sliding-stats-container > .stats-card{
+	flex-shrink: 0;
+	margin-right: 2rem;
+	width: 49%;
+}
+
+.sliding-stats-container > .stats-card:last-child{
+	margin-right: 0;
+}
+
+.guest-type-room-pricings section .guest-type{
+    font-size: 1.46rem;
+    background-color: #E1F0FF;
+    border-radius: 0.55rem;
+    padding: 1rem;
+    margin: 0 0 1rem;
+}
+
+.guest-type-room-pricings section .day-price{
+    position: relative;
+    font-size: 1.36rem;
+    padding-left: 1.6rem;
+}
+
+.guest-type-room-pricings section .day-price::before{
+    position: absolute;
+    top: 34%;
+    left: 0;
+    content: '';
+    width: 0.48em;
+    height: 0.48em;
+    border-radius: 50%;
+    background-color: #5E6278;
+}
+
+#profile-card .card-body > p{
+	position: relative;
+}
+
+#profile-card .card-body > p img{
+	width: 20rem;
+	margin-right: 2rem;	
+}
+
+#profile-card .card-body > p .btn.btn-primary{
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
 @media only screen and (max-width: 700px){
     #login-page-container .grid{
         width: 100%;
     }        
+	#profile-card .card-body > p img{
+		margin: 6rem auto 2rem;
+		width: 18rem;
+	}		
+	#profile-card .card-body > p{
+		display: flex;
+		flex-direction: column;
+	}	    
 }
