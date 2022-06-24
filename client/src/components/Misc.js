@@ -22,6 +22,24 @@ UserThumbnail.defaultProps = {
 }
 
 
+export function Separator(props){
+	const Tag = props.tag
+	const classes = `separator${props.classes ? ' '+props.classes : props.classes}`
+	if(Tag === 'hr'){
+		return <hr className={classes} {...props.attr}/>
+	}
+	return (
+		<Tag className={classes} {...props.attr}></Tag>
+	)
+}
+
+Separator.defaultProps = {
+	tag: 'hr', // String
+	classes: '', // String
+	attr: {}, // Objects
+}
+
+
 export class Collapsible extends React.Component{
     constructor(props){
 		super(props);
@@ -43,7 +61,10 @@ export class Collapsible extends React.Component{
 
     render(){
 		const Tag = (this.props.tag ? this.props.tag : 'div');
-		const classes = (this.props.classes ? ' '+this.props.classes : '');
+
+		const classes = `collapsible` +
+		(this.props.expanded ? ' expanded' : '') +
+		(this.props.classes ? ' '+this.props.classes : '')
 		
 		let attr = {...this.props.attr};
 		attr['style'] = (attr['style'] ?
@@ -51,7 +72,7 @@ export class Collapsible extends React.Component{
 		);
 
 		return (
-			<Tag id={this.props.name} className={'collapsible'+(this.props.expanded ? ' expanded' : '')+classes}
+			<Tag id={this.props.name} className={classes}
 			{...attr} ref={this.myRef}>
 				{this.props.body}
 			</Tag>
@@ -59,17 +80,14 @@ export class Collapsible extends React.Component{
     }
 }
 
-/*
-Example:
-
-<Collapsible
-	body={'body'}
-	expanded={true|false}
-	tag={'div'} // optional
-	classes={'some classes'} // optional
-	attr={{  }} // optional
-/>
-*/
+Collapsible.defaultProps = {
+	body: 'Lorem ipsum',
+	expanded: false, // Boolean
+	toggleExpand: () => {alert('Please set the toggle expand')},
+	tag: 'div',
+	classes: '',
+	attr: {}
+}
 
 export function Label(props){
 	const Tag = (props.tag ? props.tag : 'span');
@@ -103,7 +121,6 @@ export class Accordion extends React.Component{
 		};
 		this.bodyWrapperRef = React.createRef();
 	}
-
 	componentDidUpdate(prevProps){
 
 		if(prevProps.expanded !== this.props.expanded || prevProps.body !== this.props.body){
@@ -113,16 +130,15 @@ export class Accordion extends React.Component{
 			});
 		}
 	}
-
     render(){
-		const Tag = (this.props.tag ? this.props.tag : 'div');
-		const HeadingTag = (this.props.heading_tag ? this.props.heading_tag : 'h6');
-		const expanded = (this.props.expanded ? ' expanded' : '');
-		const type = ' '+(this.props.type ? this.props.type : 'white');
-		const classes = (this.props.classes ? ' '+this.props.classes : '');
+		const Tag = (this.props.tag ? this.props.tag : 'div')
+		const HeadingTag = (this.props.heading_tag ? this.props.heading_tag : 'h6')
+		const classes = `accordion ${this.props.type}` +
+			(this.props.expanded ? ' expanded' : '') +
+			(this.props.classes ? ` ${this.props.classes}` : '')
 
 		return (
-			<Tag className={'accordion'+type+expanded+classes} {...this.props.attr}>
+			<Tag className={classes} {...this.props.attr}>
 				<header className="flex-row content-space-between items-center">
 					<HeadingTag className="heading text-dark-75 text-medium flex-row items-center">
 						{
@@ -148,19 +164,15 @@ export class Accordion extends React.Component{
     }
 }
 
-/*
-Example:
-
-<Accordion
-	heading={'Heading'}
-	body={'body'}
-	expanded={true|false}
-	toggleExpand={this.toggleExpand}
-	type={'solid|white'} // optional
-	tag={'div'} // optional
-	heading_tag={'h6'} // optional
-	heading_icon={'blocks} // optional
-	classes={'some classes'} // optional
-	attr={{  }} // optional
-/>
-*/
+Accordion.defaultProps = {
+	heading: 'Heading',
+	body: 'Lorem ipsum',
+	expanded: false, // Boolean
+	toggleExpand: () => {alert('Please set the toggle expand')},
+	type: 'white', // 'solid' || 'white'
+	tag: 'div',
+	heading_tag: 'h6',
+	heading_icon: 'blocks', // SVG icons name
+	classes: '',
+	attr: {}
+}

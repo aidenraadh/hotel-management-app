@@ -1,8 +1,8 @@
 import React, {useState } from "react";
 import ErrorBoundary from './components/ErrorBoundary'
-import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
+import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom'
 
-import ProtectedRoute from './components/ProtectedRoute'
+import Protected from './components/Protected'
 import {isAuth, getUser} from './components/Auth'
 import Navigations from './components/Navigations'
 import {UserThumbnail} from './components/Misc'
@@ -20,6 +20,7 @@ import ProfilePage from './components/pages/ProfilePage'
 function App(){
     const [sidebarShown, setSidebarShown] = useState(false)
     const user = getUser()
+    const userAuth = isAuth()
 
     const sidebarItems = {
         dashboard: {
@@ -40,9 +41,7 @@ function App(){
         room_pricing: {
             icon: 'sale_1', text: 'Room Pricings', link: 'room-pricings'
         },                   
-    }
-    const userAuth = isAuth()
-        
+    }        
     return (
         <ErrorBoundary>
             <Router>
@@ -68,32 +67,50 @@ function App(){
                         })()}	
                     /> : ''       
                 )}
-                <div id='app' className={userAuth ? 'authenticated': ''}>
-                    <Switch>
-                        <Route path="/login" exact component={LoginPage}/>
-                        <ProtectedRoute path={'/'} exact component={HomePage}/>
-                        <ProtectedRoute path={'/profile'} exact component={ProfilePage} props={{
-                            user: user
-                        }}/>                         
-                        <ProtectedRoute path={'/room-types'} exact component={RoomTypePage} props={{
-                            user: user
-                        }}/>         
-                        <ProtectedRoute path={'/guest-types'} exact component={GuestTypePage} props={{
-                            user: user,
-                        }}/>                                          
-                        <ProtectedRoute path={'/rooms'} exact component={RoomPage} props={{
-                            user: user,
-                        }}/>
-                        <ProtectedRoute path={'/room-services'} exact component={RoomServicePage} props={{
-                            user: user
-                        }}/>        
-                        <ProtectedRoute path={'/room-pricings'} exact component={IndexRoomPricingPage} props={{
-                            user: user,
-                        }}/>          
-                        <ProtectedRoute path={'/room-pricings/edit'} exact component={CrtEdtRoomPricingPage} props={{
-                            user: user,
-                        }}/>                                                         
-                    </Switch>                    
+                <div id='app' className={userAuth ? '': 'not-auth'}>
+                    <Routes>
+                        <Route path="/login" exact element={<LoginPage/>}/>
+                        <Route path={`/${sidebarItems.dashboard.link}`} exact element={
+                            <Protected isAuth={userAuth}>
+                                <HomePage/>
+                            </Protected>                            
+                        }/>
+                        <Route path={'/profile'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <ProfilePage user={user}/>
+                            </Protected>                            
+                        }/>       
+                        <Route path={'/room-types'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <RoomTypePage user={user}/>
+                            </Protected>                            
+                        }/>              
+                        <Route path={'/guest-types'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <GuestTypePage user={user}/>
+                            </Protected>                            
+                        }/>   
+                        <Route path={'/rooms'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <RoomPage user={user}/>
+                            </Protected>                            
+                        }/>
+                        <Route path={'/room-services'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <RoomServicePage user={user}/>
+                            </Protected>                            
+                        }/>      
+                        <Route path={'/room-pricings'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <IndexRoomPricingPage user={user}/>
+                            </Protected>                            
+                        }/>         
+                        <Route path={'/room-pricings/edit'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <CrtEdtRoomPricingPage user={user}/>
+                            </Protected>                            
+                        }/>                                                                                                                             
+                    </Routes>                    
                 </div>     
             </Router>
         </ErrorBoundary>

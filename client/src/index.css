@@ -4,6 +4,10 @@
 @import 'css/utilities.css';
 @import 'css/media-queries.css';
 
+#app.not-auth{
+	padding: 0;
+}
+
 #login-page-container{
     min-height: 100vh;
     padding: 4rem;

@@ -1,6 +1,6 @@
 import {useCallback, useState}  from "react"
 import {api, keyHandler} from '../Utils'
-import {Redirect} from "react-router"
+import {Navigate} from "react-router"
 
 import {Button} from '../Buttons'
 import {TextInput, TextInputWithBtn} from '../Forms'
@@ -32,7 +32,7 @@ const LoginPage = (props) => {
     }, [email, password])
     // When the user already authenticated
     if(isAuth()){
-        return <Redirect to={'/'}/>
+        return <Navigate to={'/'}/>
     }
 
     return (<>

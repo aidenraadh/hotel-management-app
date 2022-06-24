@@ -31,6 +31,8 @@ services:
       - POSTGRES_DB=hotel_management_app
       - POSTGRES_USER=testuser
       - POSTGRES_PASSWORD=root
+    depends_on:
+      - client        
 volumes:
   pg_data:
   

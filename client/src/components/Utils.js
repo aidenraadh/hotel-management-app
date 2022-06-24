@@ -45,28 +45,8 @@ export const getQueryString = (queries) => {
 	return arrString.length ? `?${arrString.join('&')}` : ''
 }
 
-// Parse a JSON value if it can
-// If its not a JSON value, return the original value
-export function parseIfJson(data){
-	let parsed = null;
-    try {
-        parsed = JSON.parse(data);
-    } catch (e) {
-        return data;
-    }
-
-    if(typeof parsed === 'object'){
-    	return parsed;
-    }
-
-    return data;
-}
-// Parse a value to integer and return the integer
-// If cant be parsed, return the original value
-export function parseIfInt(value){
-	const int = Number(value);
-	if(value === '' || isNaN(int)) return value;
-	return int;
+export function getBaseName(fileUrl){
+	return fileUrl.replace(/.*\//, '');
 }
 
 export function formatNum(num, sanitizeOnly = false){
@@ -96,10 +76,6 @@ export function formatNum(num, sanitizeOnly = false){
 	}
 	// Convert array to string.
 	return num.join('');
-}
-
-export function getBaseName(fileUrl){
-	return fileUrl.replace(/.*\//, '');
 }
 
 /**

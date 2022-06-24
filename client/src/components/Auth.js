@@ -4,7 +4,7 @@ export const isAuth = () => (
     localStorage.getItem(`jwt_token`) ?
     true : false
 )
-// Clear the user's token and data from local storage then redirect to login page
+// Clear the user's token dan data from local storage then redirect to login page
 export const logout = () => {
     localStorage.removeItem(`jwt_token`)
     localStorage.removeItem(`user`)
