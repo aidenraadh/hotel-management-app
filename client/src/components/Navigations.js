@@ -135,7 +135,7 @@ function Navigations(props){
 							<li key={itemKey}>
 								<button type='button' className={`sidebar-item${activeSubItemKey === itemKey.toString() ? ' active' : ''}`} 
 								onClick={() => {toggleSubItemHeight(`${itemKey}`)}}>
-									<SVGIcons classes={'menu-icon'} name='layers' color={''} />
+									<SVGIcons classes={'menu-icon'} name={item.icon ? item.icon : 'layers'} color={''} />
 									<span className="text">{item.text}</span> 
 									<SVGIcons classes={'expand-icon'} name='angle_down' attr={{style: {
 										transform: `rotate(${subItemsHeights[`${itemKey}`] ? '0deg' : '-90deg'})`

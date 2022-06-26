@@ -3,7 +3,6 @@
 const model       = require('../../models/index')
 const Hotel       = model.Hotel
 const RoomService = model.RoomService
-const Room        = model.Room
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {

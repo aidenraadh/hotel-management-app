@@ -16,7 +16,7 @@ This is the layout styles of the button
 .btn{
 	display: inline-block;
 	position: relative;
-	padding: 0.6em 1.2em;
+	padding: 0.54em 1.2em;
 	text-align: center;
 	font-size: 1.38rem;
 	border-radius: 0.55rem;
@@ -382,7 +382,7 @@ All button in the group must be in the same size
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
-	padding: 1.6rem 2rem 1.6rem 1.2rem;
+	padding: 1.48rem 2rem 1.48rem 1.2rem;
 	color: #FFFFFF;
 }
 
@@ -408,32 +408,45 @@ All button in the group must be in the same size
 	transform: rotate(-180deg);
 }
 
-.sidebar-item .svg-icon > svg{
+.sidebar-item .menu-icon > svg,
+.sidebar-item .expand-icon > svg{
 	width: 1.8em;
 }
 
-.sidebar-item .svg-icon .path{
+.sidebar-item .menu-icon .path{
 	fill: #494B74;
 	transition: fill 0.3s;
 }
 
-.sidebar-item.active .svg-icon .path,
-.sidebar-item:hover .svg-icon .path,
-.sidebar-item:focus .svg-icon .path
+.sidebar-item.active .menu-icon .path,
+.sidebar-item:hover .menu-icon .path,
+.sidebar-item:focus .menu-icon .path
 {
 	fill: #3699FF;
 }
 
-.sidebar-item .svg-icon .stroke{
+.sidebar-item .menu-icon .stroke{
 	stroke: #494B74;
 	transition: stroke 0.3s;
 }
 
-.sidebar-item.active .svg-icon .stroke,
-.sidebar-item:hover .svg-icon .stroke,
-.sidebar-item:focus .svg-icon .stroke
+.sidebar-item.active .menu-icon .stroke,
+.sidebar-item:hover .menu-icon .stroke,
+.sidebar-item:focus .menu-icon .stroke
 {
 	stroke: #3699FF;
+}
+
+.sidebar-item .expand-icon{
+	margin: 0 0 0 auto;
+}
+
+.sidebar-item .expand-icon svg{
+	transition: transform 0.3s;
+}
+
+.sidebar-item .expand-icon .path{
+	fill: #3699FF;
 }
 
 .sidebar-item .text{
@@ -452,6 +465,17 @@ All button in the group must be in the same size
 .sidebar-item:focus .text
 {
 	color: #FFFFFF;
+}
+
+.sidebar .sub-items{
+	list-style-type: none;
+	max-height: 0;
+	transition: max-height 0.3s;
+	overflow: hidden;
+}
+
+.sidebar .sub-items .sidebar-item{
+	padding-left: 5.4rem;
 }
 
 /*
@@ -627,8 +651,16 @@ All button in the group must be in the same size
 .table-container th, .table-container td{
 	font-size: inherit;
 	text-align: left;
-	padding: 0.8em;
+	padding: 1.2em;
 	white-space: nowrap; 
+}
+
+.table-container th:first-child, .table-container td:first-child{
+	padding-left: 0;
+}
+
+.table-container th:last-child, .table-container td:last-child{
+	padding-right: 0;
 }
 
 .table-container th{
@@ -881,6 +913,18 @@ All button in the group must be in the same size
   	cursor: pointer;
 }
 
+.multi-choice.sm{
+	font-size: 1.58rem;
+}
+
+.multi-choice.md{
+	font-size: 1.78rem;
+}
+
+.multi-choice.lg{
+	font-size: 2rem;
+}
+
 .multi-choice input{
   	position: absolute;
   	opacity: 0;
@@ -890,7 +934,7 @@ All button in the group must be in the same size
 }
 
 .multi-choice .choice-name{
-	font-size: 1.42rem;
+	font-size: 1.48rem;
 	padding-left: 0.4em;
 	order: 2;
 }
@@ -940,7 +984,7 @@ All button in the group must be in the same size
 	width: 0.67em; height: 0.33em;
   	border-left: 0.134em solid;
 	border-bottom: 0.134em solid;
-	transform: rotate(-45deg);
+	transform: rotate(-45deg) translate(0.06em, -0.04em);
 }
 
 .multi-choice.checkbox.basic .checkmark > span{
@@ -969,6 +1013,34 @@ All button in the group must be in the same size
 
 .multi-choice input:checked ~ .checkmark > span{
 	opacity: 1;
+}
+
+.multi-choice.switch .checkmark{
+	justify-content: start;
+	width: 2.6em;
+	padding: 0.26em;
+	border-radius: 6em;
+	background-color: #EBEDF3;
+	transition: background-color 0.2s ease;	
+}
+
+.multi-choice.switch .checkmark > span{
+	opacity: 1;
+	border-radius: 50%;
+	width: 1em;
+	height: 1em;
+	background-color: #FFFFFF;
+	/* transform: translateX(100%); */
+	transform: translateX(0);
+	transition: transform 0.3s;
+}
+
+.multi-choice.switch input:checked ~ .checkmark{
+	background-color: #3699FF;
+}
+
+.multi-choice.switch input:checked ~ .checkmark > span{
+	transform: translateX(1.12em);
 }
 
 /*
@@ -1569,6 +1641,7 @@ All button in the group must be in the same size
 
 .modal-header .cls-modal{
   	font-size: 2.6rem;
+	padding-left: 1.2rem;
 }
 
 .modal-header .heading{
@@ -2128,3 +2201,16 @@ All button in the group must be in the same size
 .accordion.solid.expanded .body-wrapper{
 	border: 0.1rem solid #D9D9D9;
 } */
+
+/*
+|--------------------------------------------------------------------------
+| Separator
+|--------------------------------------------------------------------------
+*/
+
+.separator{
+	display: block;
+	background-color: #D9D9D9;
+	height: 0.1rem;	
+	border: none
+}

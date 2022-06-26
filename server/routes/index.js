@@ -5,6 +5,7 @@ const RoomTypeController    = require('../controllers/RoomTypeController')
 const GuestTypeController   = require('../controllers/GuestTypeController')
 const RoomController        = require('../controllers/RoomController')
 const RoomPricingController = require('../controllers/RoomPricingController')
+const RoomServiceController = require('../controllers/RoomServiceController')
 const isAuth                = require('../middlewares/isAuth')
 const isNotAuth             = require('../middlewares/isNotAuth')
 
@@ -39,8 +40,16 @@ rootRouter
 
 rootRouter
     .get('/room-pricings', [isAuth, RoomPricingController.index])  
+    .get('/room-pricings/create', [isAuth, RoomPricingController.create])   
     .post('/room-pricings', [isAuth, RoomPricingController.store])  
+    .get('/room-pricings/edit/:roomTypeId', [isAuth, RoomPricingController.edit]) 
     .put('/room-pricings/:roomTypeId', [isAuth, RoomPricingController.update])  
     .delete('/room-pricings/:roomTypeId', [isAuth, RoomPricingController.destroy])  
+
+rootRouter
+    .get('/room-services', [isAuth, RoomServiceController.index])  
+    .post('/room-services', [isAuth, RoomServiceController.store])  
+    .put('/room-services/:id', [isAuth, RoomServiceController.update])  
+    .delete('/room-pricings/:id', [isAuth, RoomServiceController.destroy])     
     
 module.exports = rootRouter

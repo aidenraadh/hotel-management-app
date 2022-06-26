@@ -4,6 +4,7 @@ import roomTypeReducer from './features/roomTypeSlice'
 import guestTypeReducer from './features/guestTypeSlice'
 import roomReducer from './features/roomSlice'
 import roomPricingReducer from './features/roomPricingSlice'
+import roomServiceReducer from './features/roomServiceSlice'
 
 
 const store = configureStore({
@@ -11,7 +12,8 @@ const store = configureStore({
         roomType: roomTypeReducer,
         guestType: guestTypeReducer,
         room: roomReducer,
-        roomPricing: roomPricingReducer
+        roomPricing: roomPricingReducer,
+        roomService: roomServiceReducer,
     }
 })
 export default store

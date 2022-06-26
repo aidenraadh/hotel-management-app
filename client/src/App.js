@@ -24,23 +24,25 @@ function App(){
 
     const sidebarItems = {
         dashboard: {
-            icon: 'layers', text: 'Dashboard', link: ''
+            icon: 'layers', text: 'Dashboard', link: '/'
         },     
         room_type: {
-            icon: 'couch', text: 'Room Types', link: 'room-types'
+            icon: 'couch', text: 'Room Types', link: '/room-types'
         },
         guest_type: {
-            icon: 'briefcase', text: 'Guest Types', link: 'guest-types'
+            icon: 'briefcase', text: 'Guest Types', link: '/guest-types'
         },
         room: {
-            icon: 'door_open', text: 'Rooms', link: 'rooms'
+            icon: 'door_open', text: 'Rooms', link: '/rooms'
         },        
         room_service: {
-            icon: 'commode_1', text: 'Room Services', link: 'room-services'
-        },     
-        room_pricing: {
-            icon: 'sale_1', text: 'Room Pricings', link: 'room-pricings'
-        },                   
+            icon: 'commode_1', text: 'Room Services', link: '/room-services'
+        },          
+        pricing_manager: {
+            icon: 'sale_1', text: 'Pricing Manager', subItems: [
+                {text: 'Room Pricings', link: '/room-pricings'}
+            ]
+        }             
     }        
     return (
         <ErrorBoundary>
@@ -61,7 +63,7 @@ function App(){
                         sidebarItems={(() => {
                             const sidebarItemNames = [
                                 'dashboard', 'room_type', 'guest_type', 'room', 'room_service',
-                                'room_pricing'
+                                'pricing_manager'
                             ]
                             return sidebarItemNames.map(name => sidebarItems[name])
                         })()}	
@@ -105,7 +107,12 @@ function App(){
                                 <IndexRoomPricingPage user={user}/>
                             </Protected>                            
                         }/>         
-                        <Route path={'/room-pricings/edit'} exact element={
+                        <Route path={'/room-pricings/create'} exact element={
+                            <Protected isAuth={userAuth}>
+                                <CrtEdtRoomPricingPage user={user}/>
+                            </Protected>                            
+                        }/>                          
+                        <Route path={'/room-pricings/edit/:id'} exact element={
                             <Protected isAuth={userAuth}>
                                 <CrtEdtRoomPricingPage user={user}/>
                             </Protected>                            

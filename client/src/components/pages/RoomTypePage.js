@@ -289,9 +289,13 @@ const RoomTypesTable = ({roomTypes, editHandler, deleteHandler}) => {
             (index + 1),
             roomType.name, 
             <>
-                <Button size={'sm'} type={'light'} text={'Edit'} attr={{
+                <Button size={'sm'} type={'light'} text={'Room services'} color={'purple'} attr={{
                     onClick: () => {editHandler(index)}
-                }}/>
+                }}/>             
+                <Button size={'sm'} type={'light'} text={'Edit'} attr={{
+                    style: {marginLeft: '1rem'},                    
+                    onClick: () => {editHandler(index)}
+                }}/>               
                 <Button size={'sm'} type={'light'} color={'red'} text={'Delete'} attr={{
                     style: {marginLeft: '1rem'},
                     onClick: () => {deleteHandler(index)}

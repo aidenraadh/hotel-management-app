@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
       models.RoomType.hasMany(
         models.RoomPricing, {foreignKey: 'room_type_id', as: 'roomPricings', }
       )
+      models.RoomType.hasMany(
+        models.RoomTypeRoomService, {foreignKey: 'room_type_id', as: 'roomServiceList', }
+      )      
     }
   };
   RoomType.init({

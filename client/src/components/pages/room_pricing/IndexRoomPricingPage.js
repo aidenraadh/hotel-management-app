@@ -116,7 +116,7 @@ function IndexRoomPricingPage({user}){
                     onClick: () => {setFilterModalShown(true)}
                 }}
             />
-            <Link to='/room-pricings/edit'>
+            <Link to='/room-pricings/create'>
                 <Button size={'sm'} text={'+ Create'}/>
             </Link>           
         </section>    
@@ -218,6 +218,11 @@ const RoomPricingsTable = ({roomTypes, viewHandler, deleteHandler}) => {
                 <Button size={'sm'} type={'light'} text={'View'} attr={{
                     onClick: () => {viewHandler(index)}
                 }}/>
+                <Link to={`/room-pricings/edit/${roomType.id}`}>
+                    <Button type={'light'} color={'purple'} size={'sm'} text={'Edit'} attr={{
+                        style: {marginLeft: '1rem'},
+                    }}/>
+                </Link>                  
                 <Button size={'sm'} type={'light'} color={'red'} text={'Delete'} attr={{
                     style: {marginLeft: '1rem'},
                     onClick: () => {deleteHandler(index)}

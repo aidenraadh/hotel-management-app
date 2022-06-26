@@ -6,6 +6,9 @@ const logger                = require('../utils/logger')
 const RoomPricingController = require('../controllers/RoomPricingController.js')
 const model                 = require('../models/index')
 const RoomType              = model.RoomType
+const RoomTypeRoomService   = model.RoomTypeRoomService
+const RoomService           = model.RoomService
+
 
 exports.index = async (req, res) => {    
     try {
@@ -34,6 +37,18 @@ exports.index = async (req, res) => {
         const roomTypes = await RoomType.findAll({
             attributes: ['id', 'name'],
             where: filters.where,
+            include: [
+                {
+                    model: RoomTypeRoomService, as: 'roomServiceList',
+                    attributes: ['id'],
+                    include: [
+                        {
+                            model: RoomService, as: 'roomService',
+                            attributes: ['id', 'name'],                            
+                        }
+                    ]                    
+                }
+            ],
             order: [['id', 'DESC']],
             ...filters.limitOffset
         })
@@ -100,6 +115,8 @@ exports.destroy = async (req, res) => {
         await roomType.destroy()
         // Destroy the room pricings for this room type
         await RoomPricingController.destroyRoomPricings(roomType.id, RoomType)
+        // Destroy the roomTypeRoomService for this room type
+        await RoomTypeRoomService.destroy({where: {room_type_id: roomType.id}})
         
         res.send({
             message: 'Room type successfully deleted'
