@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {NavLink, useLocation} from 'react-router-dom'
 import SVGIcons from './SVGIcons.js';
+import {UserThumbnail} from './Misc.js';
 
 function Navigations(props){
     const location = useLocation()
@@ -135,7 +136,7 @@ function Navigations(props){
 							<li key={itemKey}>
 								<button type='button' className={`sidebar-item${activeSubItemKey === itemKey.toString() ? ' active' : ''}`} 
 								onClick={() => {toggleSubItemHeight(`${itemKey}`)}}>
-									<SVGIcons classes={'menu-icon'} name={item.icon ? item.icon : 'layers'} color={''} />
+									<SVGIcons classes={'menu-icon'} name='layers' color={''} />
 									<span className="text">{item.text}</span> 
 									<SVGIcons classes={'expand-icon'} name='angle_down' attr={{style: {
 										transform: `rotate(${subItemsHeights[`${itemKey}`] ? '0deg' : '-90deg'})`
@@ -175,7 +176,11 @@ Navigations.defaultProps = {
 	appUrl: 'Test App', // String
 	appLogoUrl: '', // String
 	leftWidgets: [], // Array of string or JSX
-	rightWidgets: [], // Array of string or JSX
+	rightWidgets: [
+		<UserThumbnail 
+		    userName={'Hi, Aiden'}
+		/> 		
+	], // Array of string or JSX
 	sidebarItems: [] // Array of objects
 }
 

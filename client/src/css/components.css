@@ -480,128 +480,104 @@ All button in the group must be in the same size
 
 /*
 |--------------------------------------------------------------------------
-| Dropdowns
+| Dropdown
 |--------------------------------------------------------------------------
 */
 
-/* 
-<div class="dropdown bottom|right|left|top">
-    <button type="button" class="dropdown-toggle">Dropdown</button>
-    <section class="dropdown-menu">
-        <a class="dropdown-item" href="#">Item 1</a>
-        <a class="dropdown-item" href="#">Item 2</a>
-        <a class="dropdown-item" href="#">Item 3</a>
-		<a class="dropdown-item" href="#">Item 4</a>
-		<hr> <!-- optional -->
-		<a class="dropdown-item" href="#">Item 5</a>
-		<a class="dropdown-item" href="#">Item 6</a>
-    </section>
-</div>
- */
-
 .dropdown{
-    position: relative;
-    display: inline-block;
-    overflow: visible;
+	display: inline-block;
 }
 
-.dropdown-menu{
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    min-width: 20rem;
+.dropdown .tooltip{
+    background: #FFFFFF;
+    color: #3F4254;
+    font-size: 1.38rem;
     border-radius: 0.55rem;
-    background-color: #FFFFFF;
-    box-shadow: 0px 0px 30px 0px rgba(82, 63, 105, 0.05);
-    opacity: 0;
-    visibility: hidden;
-    transition-property: opacity, transform;
-	transition-duration: 0.3s, 0.3s;
+    box-shadow: 0px 0px 30px 0px rgb(82 63 105 / 5%);
+    display: none;
+	opacity: 1;
 	z-index: 95;
+	transition: opacity 200ms;
 }
 
-.dropdown-menu > hr{
+.dropdown .tooltip[data-show]{
 	display: block;
-	width: 100%;
-	height: 0.1rem;
-	border: none;
-	background-color: #D9D9D9;
 }
 
-.dropdown.bottom .dropdown-menu{
-	top: 126%; left: 0;
-	transform: translateY(4%);
+.dropdown .tooltip.hidden{
+	opacity: 0;
 }
 
-.dropdown.bottom.pull-left .dropdown-menu{
-	left: 0;
+.dropdown .list{
+	list-style-type: none;
 }
 
-.dropdown.bottom.pull-right .dropdown-menu{
-	left: auto;
+.dropdown .list > li{
+	transition: background-color 200ms;
+}
+
+.dropdown .list > li:hover{
+	background-color: #F3F6F9;
+}
+
+.dropdown .list > li > *{
+	display: inline-block;
+	padding: 1.3rem 1.62rem;
+}
+
+.dropdown .dropdown-btn .btn-text{
+	position: relative;
+	padding-right: 1.28em;
+}
+
+.dropdown .dropdown-btn.icon-only .btn-text{
+	padding-right: 0;
+}
+
+.dropdown .dropdown-btn .btn-text::after{
+	content: '';
+	position: absolute;
+	top: 0.32em;
 	right: 0;
+	display: block;
+	width: 0.56em;
+	height: 0.56em;
+	border-bottom: 0.14em solid white;
+	border-right: 0.14em solid white;
+	transform: rotate(45deg);
 }
 
-.dropdown.right .dropdown-menu{
-	top: 0; left: 126%;
-	transform: translateX(4%);
+.dropdown .dropdown-btn.btn-primary .btn-text::after,
+.dropdown .dropdown-btn.btn.btn-light:hover .btn-text::after{
+	border-bottom: 0.14em solid white;
+	border-right: 0.14em solid white;
 }
 
-.dropdown.right.pull-top .dropdown-menu{
-	top: 0;
+.dropdown .dropdown-btn.btn-light.blue .btn-text::after{
+	border-bottom: 0.14em solid #3699FF;
+	border-right: 0.14em solid #3699FF;
 }
 
-.dropdown.right.pull-bottom .dropdown-menu{
-	top: auto;
-	bottom: 0;
+.dropdown .dropdown-btn.btn-light.green .btn-text::after{
+	border-bottom: 0.14em solid #1BC5BD;
+	border-right: 0.14em solid #1BC5BD;
 }
 
-.dropdown.left .dropdown-menu{
-	top: 0; right: 126%;
-	transform: translateX(-4%);
+.dropdown .dropdown-btn.btn-light.red .btn-text::after{
+	border-bottom: 0.14em solid #F64E60;
+	border-right: 0.14em solid #F64E60;
 }
 
-.dropdown.left.pull-top .dropdown-menu{
-	top: 0;
+.dropdown .dropdown-btn.btn-light.orange .btn-text::after{
+	border-bottom: 0.14em solid #FFA800;
+	border-right: 0.14em solid #FFA800;
 }
 
-.dropdown.left.pull-bottom .dropdown-menu{
-	top: auto;
-	bottom: 0;
+.dropdown .dropdown-btn.btn-light.purple .btn-text::after{
+	border-bottom: 0.14em solid #8950FC;
+	border-right: 0.14em solid #8950FC;
 }
 
-.dropdown.top .dropdown-menu{
-	bottom: 126%; left: 0;
-	transform: translateY(-4%);
-}
-
-.dropdown.top.pull-left .dropdown-menu{
-	left: 0;
-}
-
-.dropdown.top.pull-right .dropdown-menu{
-	left: auto;
-	right: 0;
-}
-
-.dropdown-item{
-    display: inline-block;
-    padding: 0.8rem 1rem;
-	cursor: pointer;
-	text-align: left;
-    font-size: 1.5rem;
-    transition: background-color 0.2s ease;
-}
-
-.dropdown-item:hover{
-    background-color: #f7f8fa;
-}
-
-.dropdown-menu.shown{
-    visibility: visible;
-    opacity: 1;
-    transform: translate(0);
-}
 /*
 |--------------------------------------------------------------------------
 | Table
@@ -651,7 +627,7 @@ All button in the group must be in the same size
 .table-container th, .table-container td{
 	font-size: inherit;
 	text-align: left;
-	padding: 1.2em;
+	padding: 1.16em;
 	white-space: nowrap; 
 }
 
@@ -1281,74 +1257,6 @@ All button in the group must be in the same size
 
 /*
 |--------------------------------------------------------------------------
-| Kanban Board
-|--------------------------------------------------------------------------
-*/
-
-.kanban-board .heading{
-	padding: 1.4rem 1.8rem;
-	border-radius: 0.55rem 0.55rem 0 0;
-	font-size: 1.56rem;
-	background-color: #F3F6F9;
-}
-
-.kanban-board .body{
-	padding: 1.4rem 1.8rem;
-	border-radius: 0 0 0.55rem 0.55rem;
-	background-color: #F3F6F9;
-}
-
-.kanban-board.primary .heading{
-	color: #FFFFFF;
-}
-
-.kanban-board.primary.blue .heading{
-	background-color: #3699ff;
-}
-
-.kanban-board.primary.green .heading{
-	background-color: #1BC5BD;
-}
-
-.kanban-board.primary.red .heading{
-	background-color: #F64E60;
-}
-
-.kanban-board.primary.orange .heading{
-	background-color: #FFA800;
-}
-
-.kanban-board.primary.purple .heading{
-	background-color: #8950FC;
-}
-
-.kanban-board.light.blue .heading{
-	color: #3699ff;
-	background-color: #E1F0FF;
-}
-
-.kanban-board.light.green .heading{
-	color: #1BC5BD;
-	background-color: #C9F7F5;
-}
-
-.kanban-board.light.red .heading{
-	color: #F64E60;
-	background-color: #FFE2E5;
-}
-
-.kanban-board.light.orange .heading{
-	color: #FFA800;
-	background-color: #FFF4DE;
-}
-
-.kanban-board.light.purple .heading{
-	color: #8950FC;
-	background-color: rgba(137,80,252,0.14);
-}
-
-/*
-|--------------------------------------------------------------------------
 | SVG Icons
 |--------------------------------------------------------------------------
 */
@@ -1369,7 +1277,7 @@ All button in the group must be in the same size
 }
 
 .svg-icon .path.fade{
-	opacity: 0.3
+	opacity: 0.4
 }
 
 .svg-icon.blue .path{

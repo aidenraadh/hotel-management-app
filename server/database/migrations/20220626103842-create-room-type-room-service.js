@@ -23,7 +23,7 @@ module.exports = {
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE
-      }
+      },      
     });
     // Add foreign key to room_service_id
     await queryInterface.addConstraint('room_type_room_services', {

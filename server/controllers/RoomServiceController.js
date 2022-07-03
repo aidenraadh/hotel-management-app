@@ -15,7 +15,7 @@ exports.index = async (req, res) => {
         queries.offset = parseInt(queries.offset) ? parseInt(queries.offset) : 0  
         queries.name = Joi.string().required().trim().validate(queries.name)
         queries.name = queries.name.error ? '' : queries.name.value      
-        queries.not_for_store = parseInt(queries.not_for_store) ? parseInt(queries.not_for_store) : ''   
+        queries.not_for_room_type = parseInt(queries.not_for_room_type) ? parseInt(queries.not_for_room_type) : ''   
         // Set filters default values
         const filters = {
             where: {hotel_id: req.user.hotel_id},
@@ -24,11 +24,11 @@ exports.index = async (req, res) => {
         if(queries.name){
             filters.where.name = {[Op.iLike]: `%${queries.name}%`}
         } 
-        if(queries.not_for_store){
-            filters.where = `"owner_id"=${req.user.owner_id} AND 
+        if(queries.not_for_room_type){
+            filters.where = `"hotel_id"=${req.user.hotel_id} AND 
             NOT EXISTS (
                 SELECT id FROM "${RoomTypeRoomService.tableName}" WHERE "room_service_id"="${RoomService.name}"."id"
-                AND "room_type_id"=${queries.not_for_store}
+                AND "room_type_id"=${queries.not_for_room_type}
             )`
             
             if(queries.name){

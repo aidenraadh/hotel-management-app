@@ -1,7 +1,10 @@
 @media only screen and (min-width: 1281px) {
   html {
-    font-size: 0.74125vw;
+    font-size: 0.70125vw;
   }
+  #app{
+	padding: 9.6rem 14rem 14rem 16rem;
+  }  
 }
 
 /* html font size is 9.14px at 375 px, 1.6rem = 14.6px */

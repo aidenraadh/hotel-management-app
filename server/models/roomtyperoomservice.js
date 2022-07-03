@@ -11,8 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       models.RoomTypeRoomService.belongsTo(
-        models.RoomService, {foreignKey: 'room_service_id', as: 'roomService'}
-      )      
+        models.RoomService, {foreignKey: 'room_service_id', as: 'roomService', }
+      )  
     }
   }
   RoomTypeRoomService.init({
@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'RoomTypeRoomService',
     tableName: 'room_type_room_services',
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at', 
   });
   return RoomTypeRoomService;
 };

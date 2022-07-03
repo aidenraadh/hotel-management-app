@@ -5,7 +5,7 @@ const filters = {
     name: '',
     limit: 10, 
     offset: 0,
-    not_for_store: ''
+    not_for_room_type: ''
 }
 
 const guestTypeSlice = createSlice({

@@ -127,6 +127,30 @@ exports.destroy = async (req, res) => {
     } 
 }
 
+exports.storeRoomServices = async (req, res) => {
+    try {
+        const roomType = await getRoomType(req.params.id, req.user.hotel_id)
+        if(!roomType){
+            return res.status(400).send({message: 'Room type not found'})
+        }        
+        const {values, errMsg} = await validateInput(req, ['roomServiceIds'])
+        if(errMsg){
+            return res.status(400).send({message: errMsg})
+        }
+        await RoomTypeRoomService.bulkCreate(values.roomServiceIds.map(roomServiceId => ({
+            room_type_id: req.params.id,
+            room_service_id: roomServiceId
+        })))
+        return res.send({
+            roomType: await getRoomType(req.params.id, req.user.hotel_id), 
+            message: 'Room service successfully added'
+        })        
+    } catch (err) {
+        logger.error(err, {errorObj: err})
+        res.status(500).send({message: err.message})        
+    }
+}
+
 /**
  * 
  * @param {object} req - The request body
@@ -157,6 +181,19 @@ const validateInput = async (req, inputKeys) => {
             }).messages({
                 'string.max': 'The room type name must below 100 characters',
             }),
+            roomServiceIds: Joi.array().required().items(Joi.number().integer()).external(async (value, helpers) => {
+                const uniqueIds = [... new Set(value)]
+                if(uniqueIds.length !== uniqueIds.length){
+                    throw {message: 'There are duplicate in added room services'}
+                }
+                const alrAddedRoomServices = await RoomTypeRoomService.findAll({
+                    where: {room_type_id: req.params.id, room_service_id: value}
+                })
+                if(alrAddedRoomServices.length !== 0){
+                    throw {message: 'Some of the room services already added'}
+                }
+                return value
+            })
         }
         // Create the schema based on the input key
         const schema = {}
@@ -181,9 +218,22 @@ const validateInput = async (req, inputKeys) => {
 
 const getRoomType = async (id, hotelId) => {
     try {
-        return await RoomType.findOne({where: {
-            id: id, hotel_id: hotelId
-        }})
+        return await RoomType.findOne({
+            attributes: ['id', 'name'],
+            where: {id: id, hotel_id: hotelId},
+            include: [
+                {
+                    model: RoomTypeRoomService, as: 'roomServiceList',
+                    attributes: ['id'],
+                    include: [
+                        {
+                            model: RoomService, as: 'roomService',
+                            attributes: ['id', 'name'],                            
+                        }
+                    ]                    
+                }
+            ],            
+        })
     } catch (error) {
         throw error
     }
