@@ -149,6 +149,13 @@ This is the layout styles of the button
 	background-color: #7337EE;
 }
 
+.btn-primary.black{
+	background-color: rgba(24,28,50,0.9);
+}
+
+.btn-primary.black:hover, .btn-primary.black.active{
+	background-color: rgba(24,28,50,1);
+}
 
 /*
 ----- PRIMARY BUTTON -----
@@ -220,6 +227,16 @@ This is the layout styles of the button
 	background-color: #8950FC;
 }
 
+.btn-light.black, .btn-light.black .path{
+	color: #181C32;
+	fill: #181C32;
+	background-color: rgba(24,28,50,0.14);
+}
+
+.btn-light.black:hover, .btn-light.black.active{
+	background-color: #181C32;
+}
+
 /*
 ----- BUTTONS GROUP -----
 All button in the group must be in the same size
@@ -258,11 +275,7 @@ All button in the group must be in the same size
 
 /*
 <nav>
-	<div class="topbar">
-		<a href=#
-		className="topbar-item app-brand flex-row content-center items-center">
-			img
-		</a>	
+	<div class="topbar">	
 		<ul class="left-widgets">
 			<button type="show-sidebar-btn>Show</button>
 			<li class="topbar-item">
@@ -314,13 +327,6 @@ All button in the group must be in the same size
 	z-index: 96;
 }
 
-.topbar .app-brand{
-	order: 2;
-}
-.topbar .app-brand > img{
-	width: 16rem;
-}
-
 .topbar .left-widgets, .topbar .right-widgets{
 	display: flex;
 	align-items: center;
@@ -332,7 +338,7 @@ All button in the group must be in the same size
 }
 
 .topbar .right-widgets{
-	order: 3;
+	order: 2;
 }
 
 .topbar ul{
