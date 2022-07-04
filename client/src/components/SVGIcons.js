@@ -38,7 +38,7 @@ clipboard_check,share
 --------------- GENERAL ---------------
 
 other, search, trash, update, visible, hidden,
-settings, gen017, half_star, star
+settings, gen017, half_star, star, gen041, gen035, gen034
 
 --------------- FILES ---------------
 
@@ -801,6 +801,33 @@ export default function SVGIcons(props){
 				</g>
 				</svg>
 			</span>			
+		),
+		gen041: (
+			<span className={classes} aria-hidden="true">
+				<svg xmlns="http://www.w3.org/2000/svg"  {...props.attr} viewBox="0 0 24 24" fill="none">
+					<rect className="path fade" x="2" y="2" width="20" height="20" rx="10" fill="currentColor"/>
+					<rect className="path" x="10.8891" y="17.8033" width="12" height="2" rx="1" transform="rotate(-90 10.8891 17.8033)" fill="currentColor"/>
+					<rect className="path" x="6.01041" y="10.9247" width="12" height="2" rx="1" fill="currentColor"/>
+				</svg>
+			</span>
+		),
+		gen035: (
+			<span className={classes} aria-hidden="true">
+				<svg xmlns="http://www.w3.org/2000/svg" {...props.attr} viewBox="0 0 24 24" fill="none">
+					<rect className="path fade" opacity="0.3" x="2" y="2" width="20" height="20" rx="5" fill="currentColor"/>
+					<rect className="path" x="10.8891" y="17.8033" width="12" height="2" rx="1" transform="rotate(-90 10.8891 17.8033)" fill="currentColor"/>
+					<rect className="path" x="6.01041" y="10.9247" width="12" height="2" rx="1" fill="currentColor"/>
+				</svg>
+			</span>
+		),
+		gen034: (
+			<span className={classes} aria-hidden="true">
+				<svg xmlns="http://www.w3.org/2000/svg" {...props.attr} viewBox="0 0 24 24" fill="none">
+					<rect className="path fade" x="2" y="2" width="20" height="20" rx="5" fill="currentColor"/>
+					<rect className="path" x="7" y="15.3137" width="12" height="2" rx="1" transform="rotate(-45 7 15.3137)" fill="currentColor"/>
+					<rect className="path" x="8.41422" y="7" width="12" height="2" rx="1" transform="rotate(45 8.41422 7)" fill="currentColor"/>
+				</svg>
+			</span>
 		),
 	};
 	if(props.getNames){

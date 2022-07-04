@@ -25,7 +25,8 @@ rootRouter
     .post('/room-types', [isAuth, RoomTypeController.store])
     .put('/room-types/:id', [isAuth, RoomTypeController.update])
     .delete('/room-types/:id', [isAuth, RoomTypeController.destroy])
-    .post('/room-types/store-room-services/:id', [isAuth, RoomTypeController.storeRoomServices])
+    .post('/room-types/:id/store-room-services', [isAuth, RoomTypeController.storeRoomServices])
+    .post('/room-types/:id/delete-room-services', [isAuth, RoomTypeController.detroyRoomServices])
 
 rootRouter
     .get('/guest-types', [isAuth, GuestTypeController.index])

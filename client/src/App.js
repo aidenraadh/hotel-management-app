@@ -39,7 +39,7 @@ function App(){
             icon: 'commode_1', text: 'Room Services', link: '/room-services'
         },          
         pricing_manager: {
-            icon: 'sale_1', text: 'Pricing Manager', subItems: [
+            icon: 'sale_2', text: 'Pricing Manager', subItems: [
                 {text: 'Room Pricings', link: '/room-pricings'}
             ]
         }             

@@ -212,7 +212,7 @@ export function Checkbox(props){
 	const classes = `multi-choice checkbox ${props.size} ${props.type}` +
 		(props.classes ? ` ${props.classes}` : props.classes)
 
-	let formAttr = {...props.formAttr, value: props.value}
+	let formAttr = {...props.formAttr}
 	if(props.formName){
 		formAttr = {...formAttr,
 			id: props.formName, name: props.formName, 

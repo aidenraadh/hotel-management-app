@@ -151,6 +151,29 @@ exports.storeRoomServices = async (req, res) => {
     }
 }
 
+exports.detroyRoomServices = async (req, res) => {
+    try {
+        const roomType = await getRoomType(req.params.id, req.user.hotel_id)
+        if(!roomType){
+            return res.status(400).send({message: 'Room type not found'})
+        }        
+        const {values, errMsg} = await validateInput(req, ['roomTypeRoomServiceIds'])
+        if(errMsg){
+            return res.status(400).send({message: errMsg})
+        }
+        await RoomTypeRoomService.destroy({
+            where: {id: values.roomTypeRoomServiceIds}
+        })
+        return res.send({
+            roomType: await getRoomType(req.params.id, req.user.hotel_id), 
+            message: 'Room service successfully removed'
+        })        
+    } catch (err) {
+        logger.error(err, {errorObj: err})
+        res.status(500).send({message: err.message})        
+    }
+}
+
 /**
  * 
  * @param {object} req - The request body
@@ -181,11 +204,19 @@ const validateInput = async (req, inputKeys) => {
             }).messages({
                 'string.max': 'The room type name must below 100 characters',
             }),
-            roomServiceIds: Joi.array().required().items(Joi.number().integer()).external(async (value, helpers) => {
+            roomServiceIds: Joi.array().required().items(Joi.number().integer()).external(async value => {
                 const uniqueIds = [... new Set(value)]
                 if(uniqueIds.length !== uniqueIds.length){
                     throw {message: 'There are duplicate in added room services'}
                 }
+                // Check if the room service is for this hotel
+                const hotelRoomServices = await RoomService.findAll({
+                    where: {id: value, hotel_id: req.user.hotel_id}
+                })      
+                if(hotelRoomServices.length !== value.length){
+                    throw {message: 'One of the room services is not exist'}
+                }                          
+                // Check if the room service already added for this room type
                 const alrAddedRoomServices = await RoomTypeRoomService.findAll({
                     where: {room_type_id: req.params.id, room_service_id: value}
                 })
@@ -193,7 +224,17 @@ const validateInput = async (req, inputKeys) => {
                     throw {message: 'Some of the room services already added'}
                 }
                 return value
-            })
+            }),
+            roomTypeRoomServiceIds: Joi.array().required().items(Joi.number().integer()).external(async value => {
+                // Check if the room service already added for this room type
+                const roomTypeRoomServices = await RoomTypeRoomService.findAll({
+                    where: {id: value, room_type_id: req.params.id}
+                })
+                if(roomTypeRoomServices.length !== value.length){
+                    throw {message: 'Some of the room services are not exist'}
+                }
+                return value
+            }),            
         }
         // Create the schema based on the input key
         const schema = {}

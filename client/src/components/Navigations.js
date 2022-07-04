@@ -94,14 +94,10 @@ function Navigations(props){
 
 	return (
 		<nav>
+			{/*----------- Topbar -----------*/}
 			<section className="topbar">
-				<a href={props.appUrl}
-				className="topbar-item app-brand flex-row content-center items-center">
-					{props.appLogoUrl ? <img src={props.appLogoUrl} alt={'User avatar'} /> : ''}
-				</a>
 				<div className="left-widgets">
-					<button type="button" 
-					className="topbar-item show-sidebar-btn"
+					<button type="button" className="topbar-item show-sidebar-btn"
 					onClick={() => {props.toggleSidebar(state => !state)}}>
 						<SVGIcons
 							name={'article'} color={'blue'}
@@ -121,6 +117,7 @@ function Navigations(props){
 				</ul>
 			</section>
 
+			{/*----------- Sidebar -----------*/}
 			<section className={'sidebar'+(props.sidebarShown ? ' shown' : '')}>
 				<button type="button" className="sidebar-item toggle-sidebar-btn"
 				onClick={() => {props.toggleSidebar(state => !state)}}>
@@ -136,7 +133,7 @@ function Navigations(props){
 							<li key={itemKey}>
 								<button type='button' className={`sidebar-item${activeSubItemKey === itemKey.toString() ? ' active' : ''}`} 
 								onClick={() => {toggleSubItemHeight(`${itemKey}`)}}>
-									<SVGIcons classes={'menu-icon'} name='layers' color={''} />
+									<SVGIcons classes={'menu-icon'} name={item.icon} color={''} />
 									<span className="text">{item.text}</span> 
 									<SVGIcons classes={'expand-icon'} name='angle_down' attr={{style: {
 										transform: `rotate(${subItemsHeights[`${itemKey}`] ? '0deg' : '-90deg'})`
@@ -173,8 +170,6 @@ function Navigations(props){
 }
 
 Navigations.defaultProps = {
-	appUrl: 'Test App', // String
-	appLogoUrl: '', // String
 	leftWidgets: [], // Array of string or JSX
 	rightWidgets: [
 		<UserThumbnail 

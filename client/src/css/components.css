@@ -497,7 +497,7 @@ All button in the group must be in the same size
     display: none;
 	opacity: 1;
 	z-index: 95;
-	transition: opacity 200ms;
+	transition: opacity 300ms;
 }
 
 .dropdown .tooltip[data-show]{
@@ -1653,47 +1653,6 @@ All button in the group must be in the same size
 
 /*
 |--------------------------------------------------------------------------
-| Media Viewer
-|--------------------------------------------------------------------------
-*/
-
-.media-viewer{
-	position: fixed;
-	top: 0; left: 0;
-	width: 100%;
-	height: 100%;
-	background-color: rgba(0,0,0,0.3);
-	opacity: 0;
-	visibility: hidden;
-	transition: opacity 0.3s ease;
-	z-index: 98;
-}
-
-.media-viewer.shown{
-	opacity: 1;
-	visibility: visible;
-}
-
-.media-viewer > button{
-	position: absolute;
-	top: 2rem; right: 2rem;
-	font-size: 3.6rem;
-}
-
-.media-viewer > .media{
-	max-width: 40vw;
-	max-height: 90vh;
-	overflow-y: auto;
-}
-
-.media-viewer > .media > *{
-	display: block;
-	width: 100%;
-	object-fit: cover;
-}
-
-/*
-|--------------------------------------------------------------------------
 | Section Header
 |--------------------------------------------------------------------------
 */
@@ -1724,124 +1683,6 @@ All button in the group must be in the same size
 
 .section-header .header-actions > *:first-child{
 	margin-left: 0;
-}
-
-/*
-|--------------------------------------------------------------------------
-| Loading Screen
-|--------------------------------------------------------------------------
-*/
-
-.loading-screen{
-	position: fixed; top: 0; left: 0;
-	width: 100vw; height: 100vh;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	background-color: rgba(0,0,0,0.3);
-	opacity: 0;
-	visibility: hidden;
-	z-index: 99;
-	transition: opacity 0.3s;
-}
-
-.loading-screen.dark-overlay{
-	background-color: rgba(0,0,0,0.3);
-}
-
-.loading-screen.transparent-overlay{
-	background-color: transparent;
-}
-
-.loading-screen.visible{
-	visibility: visible;
-}
-
-.loading-screen.shown{
-	opacity: 1;
-}
-
-.loading-screen .loading-text{
-	display: inline-block;
-	margin-bottom: 1rem;
-	font-size: 1.8rem;
-	color: #FFFFFF;
-}
-
-/* Ripple loading screen */
-
-/* 
-<div class="loading-screen" aria-hidden="true">
-	<span class="loading-text">Please wait...</span> <!-- Optional -->
-	<div class="lds-ripple">
-		<div></div>
-		<div></div>
-	</div>	
-</div>
- */
-
-.lds-ripple{
-	display: inline-block;
-	position: relative;
-	width: 8rem;
-	height: 8rem;
-	transform: scale(0.4);
-	transition: transform 0.3s;
-}
-
-.loading-screen.shown .lds-ripple{
-	transform: scale(0.8);
-}
-
-.lds-ripple div{
-	position: absolute;
-	border: 0.4rem solid #fff;
-	border-radius: 50%;
-	animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-}
-
-.lds-ripple.white div{
-	border-color: #FFFFFF;
-}
-
-.lds-ripple.blue div{
-	border-color: #3699FF;
-}
-
-.lds-ripple div:nth-child(2){
-	animation-delay: -0.5s;
-}
-
-@keyframes lds-ripple{
-	0%{
-		top: 3.6rem;
-	  	left: 3.6rem;
-	  	width: 0;
-	  	height: 0;
-	  	opacity: 1;
-	}
-	100%{
-		top: 0;
-	  	left: 0;
-	  	width: 7.2rem;
-	  	height: 7.2rem;
-	  	opacity: 0;
-	}
-}
-
-.footer{
-	border-top: 1px dashed #DBDBDB;
-	padding: 1.6rem 3.2rem;
-	width: 100%;
-	font-size: 1.44rem;
-	line-height: 2.4em;
-	color: #DBDBDB;
-}
-
-.footer a{
-	text-decoration: underline;
-	color: #6993FF;
 }
 
 /*

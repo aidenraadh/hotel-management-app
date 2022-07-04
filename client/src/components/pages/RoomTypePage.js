@@ -8,7 +8,7 @@ import Table from '../Table'
 import { Modal, ConfirmPopup } from '../Windows'
 import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
-import { Select, TextInput } from '../Forms'
+import { Checkbox, Select, TextInput } from '../Forms'
 import { Dropdown, Label, Separator } from '../Misc'
 import SVGIcons from '../SVGIcons'
 
@@ -26,9 +26,10 @@ function RoomTypePage({user}){
     const [makeRoomTypeMdlShown, setMakeRoomTypeMdlShown] = useState(false)
     const [editRoomSrvcsMdlShown, setEditRoomSrvcsMdlShown] = useState(false)
     const [addRoomSrvcsMdlShown, setAddRoomSrvcsMdlShown] = useState(false)
-    /* Search room services */
+    /* Room services */
     const [searchedRoomServices, setSearchedRoomServices] = useState([])
     const [addedRoomServices, dispatchAddedRoomServices] = useReducer(addedRoomServiceReducer, [])
+    const [rmTypeRmServiceIds, dispatchRmTypeRmServiceIds] = useReducer(rmTypeRmServiceReducer, [])
     const [roomServiceName, setRoomServiceName] = useState('')
     /* Delete room type */
     const [popupShown, setPopupShown] = useState(false)    
@@ -121,6 +122,7 @@ function RoomTypePage({user}){
 
     const editRoomServices = useCallback(index => {
         setRoomTypeIndex(index)
+        dispatchRmTypeRmServiceIds({type: 'empty'})
         setEditRoomSrvcsMdlShown(true)
     }, [roomType.roomTypes])
 
@@ -135,7 +137,7 @@ function RoomTypePage({user}){
         const targetRoomType = roomType.roomTypes[roomTypeIndex]
         const roomServiceIds = addedRoomServices.map(roomService => roomService.id)
         setDisableBtn(true)
-        api.post(`/room-types/store-room-services/${targetRoomType.id}`, {
+        api.post(`/room-types/${targetRoomType.id}/store-room-services`, {
             roomServiceIds: roomServiceIds,
         })
             .then(response => {
@@ -156,6 +158,31 @@ function RoomTypePage({user}){
                 }})
             })        
     }, [roomTypeIndex, addedRoomServices, roomType.roomTypes])    
+
+    const deleteRoomServices = useCallback(() => {
+        const targetRoomType = roomType.roomTypes[roomTypeIndex]
+        setDisableBtn(true)
+        api.post(`/room-types/${targetRoomType.id}/delete-room-services`, {
+            roomTypeRoomServiceIds: rmTypeRmServiceIds,
+        })
+            .then(response => {
+                setDisableBtn(false)
+                setEditRoomSrvcsMdlShown(false)      
+                setSuccPopupMsg(response.data.message)
+                setSuccPopupShown(true)                         
+                dispatch(replace({
+                    roomType: response.data.roomType,
+                    index: roomTypeIndex                
+                }))
+            })
+            .catch(err => {
+                setDisableBtn(false)
+                errorHandler(err, {'400': () => {
+                    setErrPopupShown(true)
+                    setErrPopupMsg(err.response.data.message)                   
+                }})
+            })         
+    }, [roomTypeIndex, rmTypeRmServiceIds, roomType.roomTypes])       
 
     const updateRoomType = useCallback(() => {
         const targetRoomType = roomType.roomTypes[roomTypeIndex] // Get the room type
@@ -244,7 +271,7 @@ function RoomTypePage({user}){
         <PlainCard
             body={<Grid numOfColumns={1} items={[
                 <section className='flex-row items-center'>
-                    <TextInput containerAttr={{style: {width: '100%', marginRight: '1rem'}}}
+                    <TextInput containerAttr={{style: {width: '100%', marginRight: '1.6rem'}}}
                         formAttr={{
                             placeholder: 'Search room types', value: roomType.filters.name,
                             onChange: (e) => {dispatch(updateFilters([
@@ -335,13 +362,9 @@ function RoomTypePage({user}){
                         onClick: searchRoomServices
                     }}/>
                 </section>
-                <p className='text-dark-50' style={{fontSize: '1.42rem', margin: '1.4rem 0 0'}}>
-                    Room service shown is the ones is not added yet to this room type. Max shown 30
-                </p>
-                <Separator attr={{style: {margin: '1.6rem 0'}}}/>
                 <p className='flex-row items-center wrap' style={{fontSize: '1.4rem'}}>
                     {addedRoomServices.map((roomService, index) => (
-                        <Label key={index} attr={{style: {margin: '0 1.2rem 1.2rem 0'}}}
+                        <Label key={index} attr={{style: {margin: '1.2rem 1.2rem 0 0'}}}
                             text={<>
                                 {roomService.name}
                                 <button className='text-red text-medium' type="button" style={{marginLeft: '0.8rem'}}
@@ -352,10 +375,15 @@ function RoomTypePage({user}){
                         />
                     ))}
                 </p>
+                <Separator attr={{style: {margin: '1.16rem 0'}}}/>                
+                <p className='text-dark-50' style={{fontSize: '1.4rem'}}>
+                    Room service shown below is the ones is not added yet to this room type. Max shown 30
+                </p>
+                <Separator attr={{style: {marginTop: '1.16rem'}}}/>
                 <Table headings={['No.', 'Name', 'Actions']} body={searchedRoomServices.map((roomService, index) => ([
                     (index + 1),
                     roomService.name,
-                    <Button size={'sm'} text={'Add'} attr={{
+                    <Button size={'sm'} text={'+ Add'} attr={{
                         onClick: () => {dispatchAddedRoomServices({type: 'add', payload: roomService})}
                     }}/>
                 ]))}/>
@@ -376,14 +404,24 @@ function RoomTypePage({user}){
                 if(!targetRoomType || targetRoomType.roomServiceList.length === 0){
                     return 'No room services found.'
                 }
-                return (
-                    <Table headings={['No.', 'Name', 'Actions']}
-                        body={targetRoomType.roomServiceList.map((list, index) => ([
-                            (index + 1),
+                return (<>
+                    <section className='flex-row items-center content-end'>
+                        <Button size='sm' color='red' text='Remove' attr={{
+                            onClick: deleteRoomServices
+                        }}/>
+                    </section>
+                    <Separator attr={{style: {marginTop: '1.2rem'}}}/>
+                    <Table headings={['Select', 'Name']}
+                        body={targetRoomType.roomServiceList.map(list => ([
+                            <Checkbox formAttr={{
+                                checked: rmTypeRmServiceIds.includes(list.id.toString()),
+                                value: list.id,
+                                onChange: (e) => {dispatchRmTypeRmServiceIds({type: 'toggle', payload: e})}
+                            }}/>,
                             list.roomService.name
                         ]))}
                     />
-                )
+                </>)
             })()}
         />   
         <ConfirmPopup
@@ -426,15 +464,15 @@ const RoomTypesTable = ({roomTypes, editRoomServices, addRoomServices, editHandl
                 <Dropdown
                     button={{ size: 'sm', type: 'light', text: 'Room services' }}
                     items={[
-                        <button type="button" className='flex-row items-center' style={{display: 'flex'}} onClick={() => {editRoomServices(index)}}>
+                        <button type="button" className='items-center' style={{display: 'flex'}} onClick={() => {editRoomServices(index)}}>
                             <SVGIcons name='write' color='blue' attr={{style: {
                                 marginRight: '0.74rem', fontSize: '1.74rem',
                             }}}/>
                             Edit room services
                         </button>,
-                        <button type="button" onClick={() => {addRoomServices(index)}}>
-                            <SVGIcons name='write' color='blue' attr={{style: {
-                                marginRight: '0.74rem', fontSize: '1.74rem',
+                        <button type="button" className='items-center' style={{display: 'flex'}} onClick={() => {addRoomServices(index)}}>
+                            <SVGIcons name='gen035' color='blue' attr={{style: {
+                                marginRight: '0.74rem', fontSize: '1.78rem',
                             }}}/>                            
                             Add room services
                         </button>
@@ -470,6 +508,27 @@ const addedRoomServiceReducer = (state, action) => {
 
             return roomServices            
         })()
+        case 'empty':
+            return []
+        default: throw new Error('Action type not valid')
+    }
+}
+
+const rmTypeRmServiceReducer = (state, action) => {
+    const {type, payload} = {...action}
+    switch (type) {
+        case 'toggle':
+            let rmTypeRmServiceIds = [...state]
+            if(rmTypeRmServiceIds.includes(payload.target.value)){
+                rmTypeRmServiceIds.splice(
+                    rmTypeRmServiceIds.indexOf(payload.target.value), 1
+                )
+            }
+            else{
+                rmTypeRmServiceIds.push(payload.target.value)
+            }
+            return rmTypeRmServiceIds
+
         case 'empty':
             return []
         default: throw new Error('Action type not valid')
