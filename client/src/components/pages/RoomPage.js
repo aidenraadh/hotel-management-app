@@ -10,7 +10,7 @@ import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
-function RoomPage({user}){
+function RoomPage({user, setPageHeading}){
     const room = useSelector(state => state.room)
     const dispatch = useDispatch()
 
@@ -168,6 +168,10 @@ function RoomPage({user}){
             dispatch(syncFilters())
         }
     }, [dispatch])     
+
+    useEffect(() => {
+        setPageHeading({title: 'Rooms', icon: 'door_open'})
+    }, [])      
     
     if(room.isLoaded === false){
         return 'Loading ...'

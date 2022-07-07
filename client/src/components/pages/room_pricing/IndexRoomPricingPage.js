@@ -10,7 +10,7 @@ import { api, errorHandler, formatNum, getQueryString, keyHandler } from '../../
 import { Grid } from '../../Layouts'
 import { Select, TextInput } from '../../Forms'
 
-function IndexRoomPricingPage({user}){
+function IndexRoomPricingPage({user, setPageHeading}){
     const roomPricing = useSelector(state => state.roomPricing)
     const dispatch = useDispatch()
 
@@ -104,6 +104,10 @@ function IndexRoomPricingPage({user}){
             dispatch(syncFilters())
         }
     }, [dispatch])     
+
+    useEffect(() => {
+        setPageHeading({title: 'Room Pricings', icon: 'sale_2'})
+    }, [])
     
     if(roomPricing.isLoaded === false){
         return 'Loading ...'

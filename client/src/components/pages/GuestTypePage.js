@@ -10,7 +10,7 @@ import { api, errorHandler, getQueryString, keyHandler } from '../Utils'
 import { Grid } from '../Layouts'
 import { Select, TextInput } from '../Forms'
 
-function GuestTypePage({user}){
+function GuestTypePage({user, setPageHeading}){
     const guestType = useSelector(state => state.guestType)
     const dispatch = useDispatch()
 
@@ -161,6 +161,10 @@ function GuestTypePage({user}){
             dispatch(syncFilters())
         }
     }, [dispatch])     
+
+    useEffect(() => {
+        setPageHeading({title: 'Guest Types', icon: 'briefcase'})
+    }, [])
     
     if(guestType.isLoaded === false){
         return 'Loading ...'

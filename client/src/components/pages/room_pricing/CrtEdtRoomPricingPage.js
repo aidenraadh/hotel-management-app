@@ -8,7 +8,7 @@ import { Button } from '../../Buttons'
 import { ConfirmPopup } from '../../Windows'
 import SVGIcons from '../../SVGIcons';
 
-function CrtEdtRoomPricingPage(props){
+function CrtEdtRoomPricingPage({setPageHeading}){
     const {id} = useParams()
 
     const [disableBtn , setDisableBtn] = useState(false)
@@ -124,7 +124,9 @@ function CrtEdtRoomPricingPage(props){
         }
     }, [roomTypes, guestTypes])  
 
-    useEffect(() => {console.log(roomPricings)}, [roomPricings])
+    useEffect(() => {
+        setPageHeading({title: 'Room Pricings', icon: 'sale_2'})
+    }, [])    
 
     if(roomTypes === undefined || guestTypes === undefined){
         return 'Loading ...'

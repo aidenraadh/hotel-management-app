@@ -1,4 +1,4 @@
-import {useState, useCallback}  from "react"
+import {useState, useCallback, useEffect}  from "react"
 import {api, errorHandler} from '../Utils'
 import {saveUser, logout} from '../Auth'
 import {Button} from '../Buttons'
@@ -7,7 +7,7 @@ import {Modal, ConfirmPopup} from '../Windows'
 import {TextInput, TextInputWithBtn} from '../Forms'
 import {Grid} from '../Layouts'
 
-function ProfilePage({user}){
+function ProfilePage({user, setPageHeading}){
     const [disableBtn , setDisableBtn] = useState(false)
 
     const [name, setNameName] = useState(user.name)
@@ -45,6 +45,10 @@ function ProfilePage({user}){
             }})           
         })   
     }, [name, oldPassword, newPassword, setUpdProfileModal, setDisableBtn])
+
+    useEffect(() => {
+        setPageHeading({title: 'Profile', icon: 'user'})
+    }, [])    
 
     if(!user){
         return 'Loading ...'

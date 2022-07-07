@@ -12,7 +12,7 @@ import { Checkbox, Select, TextInput } from '../Forms'
 import { Dropdown, Label, Separator } from '../Misc'
 import SVGIcons from '../SVGIcons'
 
-function RoomTypePage({user}){
+function RoomTypePage({user, setPageHeading}){
     const roomType = useSelector(state => state.roomType)
     const dispatch = useDispatch()
 
@@ -251,6 +251,10 @@ function RoomTypePage({user}){
             dispatch(syncFilters())
         }
     }, [dispatch]) 
+
+    useEffect(() => {
+        setPageHeading({title: 'Room Types', icon: 'couch'})
+    }, [])       
     
     if(roomType.isLoaded === false){
         return 'Loading ...'
