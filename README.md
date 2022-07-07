@@ -1,7 +1,7 @@
 ## Description
 
-This is a simple PERN app with JWT authentication. Feel free to download it as an underlay to
-your Node.js app
+A PERN PWA for hotel management. Hoteliers can manage hotel pricing, and record hotel incomes and expenses.\ 
+Hoteliers can also record room bookings and costumer spending for ease management.
 
 ## Main Stacks
 
