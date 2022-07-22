@@ -9,9 +9,6 @@ const RoomServiceController = require('../controllers/RoomServiceController')
 const isAuth                = require('../middlewares/isAuth')
 const isNotAuth             = require('../middlewares/isNotAuth')
 
-rootRouter.post('/register', [
-    isNotAuth, AuthController.register
-])
 rootRouter.post('/login', [
     isNotAuth, AuthController.login
 ])

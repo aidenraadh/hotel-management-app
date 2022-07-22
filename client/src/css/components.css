@@ -380,12 +380,18 @@ All button in the group must be in the same size
 .toolbar .page-heading .title{
 	overflow: hidden;
 	text-overflow: ellipsis;
-	padding: 0 1rem 0 0.32em;
+	padding: 0 1rem 0 0.5em;
 }
 
 .toolbar .page-heading .svg-icon{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.55rem;
+	padding: 0.56rem;
+	background-color: #E1F0FF;
 	flex-shrink: 0;
-	font-size: 1.62em;
+	font-size: 1.44em;
 }
 
 
@@ -454,7 +460,8 @@ All button in the group must be in the same size
 }
 
 .sidebar-item .menu-icon .path{
-	fill: #494B74;
+	/* fill: #494B74; */
+	fill: #606399;
 	transition: fill 0.3s;
 }
 
@@ -466,7 +473,8 @@ All button in the group must be in the same size
 }
 
 .sidebar-item .menu-icon .stroke{
-	stroke: #494B74;
+	/* stroke: #494B74; */
+	stroke: #606399;
 	transition: stroke 0.3s;
 }
 
@@ -474,7 +482,7 @@ All button in the group must be in the same size
 .sidebar-item:hover .menu-icon .stroke,
 .sidebar-item:focus .menu-icon .stroke
 {
-	stroke: #3699FF;
+	stroke: #009EF7;
 }
 
 .sidebar-item .expand-icon{
@@ -486,7 +494,7 @@ All button in the group must be in the same size
 }
 
 .sidebar-item .expand-icon .path{
-	fill: #3699FF;
+	fill: #009EF7;
 }
 
 .sidebar-item .text{
@@ -1317,7 +1325,7 @@ All button in the group must be in the same size
 }
 
 .svg-icon .path.fade{
-	opacity: 0.4
+	opacity: 0.54
 }
 
 .svg-icon.blue .path{

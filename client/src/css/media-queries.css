@@ -1,7 +1,19 @@
-@media only screen and (min-width: 1281px) {
-	html {
-		font-size: 0.6677vw;
-	}
+@media only screen and (min-width: 2001px) {
+	#app{
+		padding-top: 14rem;
+		padding-bottom: 14rem;
+		padding-left: calc(420.3px + ( (100vw - 2300px) * 0.3438 ));
+		padding-right: calc(383.9px + ( (100vw - 2300px) * 0.3362 ));
+	}  
+	.modal .modal-content{
+		width: calc(920px + ( (100vw - 2300px) * 0.1984 ));
+	}  
+	.modal.sm .modal-content{
+		width: calc(552px + ( (100vw - 2300px) * 0.184 ));
+	} 	
+}
+
+@media only screen and (max-width: 2000px) and (min-width: 1281px) {
 	#app{
 		padding: 14rem 16rem 14rem 19rem;
 	}  
@@ -10,31 +22,20 @@
 	}  
 	.modal.sm .modal-content{
 		width: 30vw;
-	}  
+	} 
 }
 
-/* html font size is 9.14px at 375 px, 1.6rem = 14.6px */
+@media only screen and (min-width: 1281px) {
+	html {
+		font-size: calc(9.6px + ( (1281px - 100vw) * (-1 * 0.00250) ) );
+	}
+}
+
 @media only screen and (max-width: 1280px) {
 	html {
 	  font-size: calc(10px - ( (1280px - 100vw) * 0.0013043 ) );
 	}
 }
-
-/* html font size is 9.14px at 375 px, 1.6rem = 14.6px 
-@media only screen and (max-width: 1280px) {
-	html {
-	  font-size: calc(10px - ( (1280px - 100vw) * 0.00095 ) );
-	}
-}*/
-
-/*
-html font size is 8.75px at 375 px, 1.6rem = 14px
-@media only screen and (max-width: 1280px) {
-  html {
-    font-size: calc(10px - ( (1280px - 100vw) * 0.00138 ) );
-  }
-}
-*/
 
 /*
 |--------------------------------------------------------------------------
@@ -96,7 +97,6 @@ html font size is 8.75px at 375 px, 1.6rem = 14px
 }
 
 @media only screen and (max-width: 900px){
-
 	.footer{
 		flex-direction: column;
 		justify-content: center;
